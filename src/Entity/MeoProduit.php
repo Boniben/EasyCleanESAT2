@@ -16,7 +16,7 @@ class MeoProduit
     private ?int $id = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $volumeProduit = null;
+    private ?float $volumeProduit = null;
 
     #[ORM\ManyToOne(inversedBy: 'meoProduits')]
     private ?Produit $produit = null;
@@ -32,6 +32,9 @@ class MeoProduit
 
     #[ORM\ManyToOne(inversedBy: 'meoProduits')]
     private ?TempsContact $tempsContact = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private ?bool $actif = true;
 
     /**
      * @var Collection<int, Actions>
@@ -117,6 +120,18 @@ class MeoProduit
     public function setTempsContact(?TempsContact $tempsContact): static
     {
         $this->tempsContact = $tempsContact;
+
+        return $this;
+    }
+
+    public function isActif(): ?bool
+    {
+        return $this->actif;
+    }
+
+    public function setActif(bool $actif): static
+    {
+        $this->actif = $actif;
 
         return $this;
     }

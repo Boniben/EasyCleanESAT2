@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Actions index{% endblock %}
+
+{% block body %}
+    <h1>Actions index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Tache</th>
+                <th>Support</th>
+                <th>Matériel</th>
+                <th>Reutilisable</th>
+                <th>Accessoire</th>
+                <th>Consommable</th>
+                <th>Code Produit</th>
+                <th>Id Contenant</th>
+                <th>Code Moyen Dilution</th>
+                <th>Modifier</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for action in actions %}
+            <tr>
+                <td>{{ action.id }}</td>
+                {% for necessaire in action.necessaire %}
+                <td>{{necessaire.code}} </td>
+                {% endfor %}
+
+                <!--<td>{{dump(action)}}</td>-->
+                <td>{{action.meoProduit.produit.code}}</td>
+                <td>{{action.meoProduit.contenant ? action.meoProduit.contenant.id : '0'}}</td>
+                <td>{{action.meoProduit.moyenDosage ? action.meoProduit.moyenDosage.code : '0'}}</td>
+                <td>
+                    <a href="{{ path('app_actions_show', {'id': action.id}) }}">show</a>
+                    <a href="{{ path('app_actions_edit', {'id': action.id}) }}">edit</a>
+                </td>
+
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_actions_new') }}">Create new</a>
+{% endblock %}
