@@ -1,3 +1,4 @@
+{% from '_macros/action_buttons.html.twig' import action_buttons %}
 {% extends 'base.html.twig' %}
 
 {% block title %}Contenants{% endblock %}
@@ -28,8 +29,9 @@
                     <img src="{{ asset('PictoContenantPNG/' ~ contenant.id ~ '.png') }}" alt="Pictogramme {{ contenant.nom }}" style="max-height: 40px;">
                 </td>
                 <td>
-                    <a href="{{ path('app_contenant_show', {'id': contenant.id}) }}">Afficher</a>
-                    <a href="{{ path('app_contenant_edit', {'id': contenant.id}) }}">Modifier</a>
+
+                    {{ action_buttons('app_contenant_show', 'app_contenant_edit', contenant.id) }}
+
                 </td>
             </tr>
         {% else %}

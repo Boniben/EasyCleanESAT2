@@ -1,3 +1,4 @@
+{% from '_macros/action_buttons.html.twig' import action_buttons %}
 ﻿{% extends 'base.html.twig' %}
 
 {% block title %}Intervention index{% endblock %}
@@ -43,8 +44,9 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ path('app_intervention_show', {'id': intervention.id}) }}">Afficher</a>
-                    <a href="{{ path('app_intervention_edit', {'id': intervention.id}) }}">Modifier</a>
+
+                    {{ action_buttons('app_intervention_show', 'app_intervention_edit', intervention.id) }}
+
                 </td>
             </tr>
         {% else %}
