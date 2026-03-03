@@ -90,6 +90,8 @@ final class InterventionController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $intervention->setDateModificaion(new \DateTime());
+            $intervention->setNumVersion(($intervention->getNumVersion() ?? 1) + 1);
             $entityManager->flush();
 
             return $this->redirectToRoute('app_intervention_index', [], Response::HTTP_SEE_OTHER);
