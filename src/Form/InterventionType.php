@@ -98,6 +98,7 @@ class InterventionType extends AbstractType
                         $qb->where('c.id = :clientId')
                            ->setParameter('clientId', $client->getId());
                     }
+                    // Pas de filtre sinon : on accepte tous les clients (JS gère l'affichage)
                     return $qb->orderBy('c.nom', 'ASC');
                 },
             ])
@@ -120,10 +121,8 @@ class InterventionType extends AbstractType
                         // CAS 2 : Filtrage par client (depuis client_id)
                         $qb->where('s.client = :client')
                            ->setParameter('client', $client);
-                    } else {
-                        // CAS 3 : Aucune pré-sélection, liste vide (Stimulus gère)
-                        $qb->where('1 = 0');
                     }
+                    // Pas de filtre sinon : on accepte tous les sites (JS gère l'affichage)
                     return $qb->orderBy('s.nom', 'ASC');
                 },
             ])
@@ -145,10 +144,8 @@ class InterventionType extends AbstractType
                         // Si un site est pré-rempli, filtrer par site
                         $qb->where('c.sitesClient = :site')
                            ->setParameter('site', $sitesClient);
-                    } else {
-                        // Aucune pré-sélection : liste vide, le JS gèrera
-                        $qb->where('1 = 0');
                     }
+                    // Pas de filtre sinon : on accepte tous les contrats (JS gère l'affichage)
                     return $qb->orderBy('c.numero', 'ASC');
                 },
             ])
@@ -170,10 +167,8 @@ class InterventionType extends AbstractType
                         // Si un site est pré-rempli, filtrer par site
                         $qb->where('z.sitesClient = :site')
                            ->setParameter('site', $sitesClient);
-                    } else {
-                        // Aucune pré-sélection : liste vide, le JS gèrera
-                        $qb->where('1 = 0');
                     }
+                    // Pas de filtre sinon : on accepte toutes les zones (JS gère l'affichage)
                     return $qb->orderBy('z.nom', 'ASC');
                 },
             ])

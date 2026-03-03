@@ -32,9 +32,9 @@
                 <td>{{ intervention.nbTravailleur }}</td>
                 <td>{{ intervention.dureeHeure }}</td>
                 <td>{{ intervention.dureeMinute }}</td>
-                <td>{{ intervention.redacteur ? intervention.redacteur.id : '' }}</td>
-                <td>{{ intervention.zonesClient ? intervention.zonesClient.id : '' }}</td>
-                <td>{{ intervention.contrat ? intervention.contrat.id : '' }}</td>
+                <td>{{ intervention.redacteur ? intervention.redacteur.initial : '' }}</td>
+                <td>{{ intervention.zonesClient ? intervention.zonesClient.nom : '' }}</td>
+                <td>{{ intervention.contrat ? intervention.contrat.numero : '' }}</td>
                 <td>
                     {% if intervention.actions is not empty %}
                         {{ intervention.actions|length }} action(s)
