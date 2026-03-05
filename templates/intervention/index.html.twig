@@ -18,7 +18,6 @@
                 <th>Redacteur</th>
                 <th>ZonesClient</th>
                 <th>Contrat</th>
-                <th>Actions</th>
                 <th>Operations</th>
             </tr>
         </thead>
@@ -35,13 +34,6 @@
                 <td>{{ intervention.redacteur ? intervention.redacteur.id : '' }}</td>
                 <td>{{ intervention.zonesClient ? intervention.zonesClient.id : '' }}</td>
                 <td>{{ intervention.contrat ? intervention.contrat.id : '' }}</td>
-                <td>
-                    {% if intervention.actions is not empty %}
-                        {{ intervention.actions|length }} action(s)
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
                 <td>
                     <a href="{{ path('app_intervention_show', {'id': intervention.id}) }}">Afficher</a>
                     <a href="{{ path('app_intervention_edit', {'id': intervention.id}) }}">Modifier</a>
