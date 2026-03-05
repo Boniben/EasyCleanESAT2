@@ -62,18 +62,11 @@ class Intervention
     #[ORM\OneToMany(targetEntity: Plage::class, mappedBy: 'intervention')]
     private Collection $plages;
 
-    /**
-     * @var Collection<int, Actions>
-     */
-    #[ORM\ManyToMany(targetEntity: Actions::class, mappedBy: 'intervention')]
-    private Collection $actions;
-
     public function __construct()
     {
         $this->elementSecurites = new ArrayCollection();
         $this->vigilanceInterventions = new ArrayCollection();
         $this->plages = new ArrayCollection();
-        $this->actions = new ArrayCollection();
         $this->numVersion = 1;
         $this->dureeHeure = 0;
         $this->dureeMinute = 0;
@@ -279,30 +272,4 @@ class Intervention
         return $this;
     }
 
-    /**
-     * @return Collection<int, Actions>
-     */
-    public function getActions(): Collection
-    {
-        return $this->actions;
-    }
-
-    public function addAction(Actions $action): static
-    {
-        if (!$this->actions->contains($action)) {
-            $this->actions->add($action);
-            $action->addIntervention($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAction(Actions $action): static
-    {
-        if ($this->actions->removeElement($action)) {
-            $action->removeIntervention($this);
-        }
-
-        return $this;
-    }
 }

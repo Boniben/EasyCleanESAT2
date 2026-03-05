@@ -24,19 +24,12 @@ class Actions
     #[ORM\ManyToMany(targetEntity: Necessaire::class, inversedBy: 'actions')]
     private Collection $necessaire;
 
-    /**
-     * @var Collection<int, Intervention>
-     */
-    #[ORM\ManyToMany(targetEntity: Intervention::class, inversedBy: 'actions')]
-    private Collection $intervention;
-
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
     private ?bool $actif = true;
 
     public function __construct()
     {
         $this->necessaire = new ArrayCollection();
-        $this->intervention = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -76,30 +69,6 @@ class Actions
     public function removeNecessaire(Necessaire $necessaire): static
     {
         $this->necessaire->removeElement($necessaire);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Intervention>
-     */
-    public function getIntervention(): Collection
-    {
-        return $this->intervention;
-    }
-
-    public function addIntervention(Intervention $intervention): static
-    {
-        if (!$this->intervention->contains($intervention)) {
-            $this->intervention->add($intervention);
-        }
-
-        return $this;
-    }
-
-    public function removeIntervention(Intervention $intervention): static
-    {
-        $this->intervention->removeElement($intervention);
 
         return $this;
     }
