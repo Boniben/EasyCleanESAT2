@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 	uniqueConstraints:[
 		new ORM\UniqueConstraint(
 			name: 'index_support_inter',
-			colums:['support_id','inter_id']
+			columns:['support_id','inter_id']
 		)
 	]
 )]
@@ -29,12 +29,12 @@ class SuppInter
     #[ORM\ManyToOne(inversedBy: 'suppInters')]
     private ?SupportClient $supportClient = null;
     #[ORM\JoinColumn( name: 'support_id', // nom de la colonne referencedColumnName: 'id',
-    nullable: false, onDelete: 'CASCADE', foreignKeyConstraintName: 'fk_support_inter' )]
+    nullable: false, onDelete: 'CASCADE')]
 
     #[ORM\ManyToOne(inversedBy: 'suppInters')]
     private ?Intervention $intervention = null;
     #[ORM\JoinColumn( name: 'inter_id', // nom de la colonne referencedColumnName: 'id',
-    nullable: false, onDelete: 'CASCADE', foreignKeyConstraintName: 'fk_intervention_supplement' )]
+    nullable: false, onDelete: 'CASCADE' )]
 
     /**
      * @var Collection<int, Actions>
