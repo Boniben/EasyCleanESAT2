@@ -27,9 +27,16 @@ class Actions
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
     private ?bool $actif = true;
 
+    /**
+     * @var Collection<int, SuppInter>
+     */
+    #[ORM\ManyToMany(targetEntity: SuppInter::class, mappedBy: 'actions')]
+    private Collection $suppInters;
+
     public function __construct()
     {
         $this->necessaire = new ArrayCollection();
+        $this->suppInters = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,6 +88,33 @@ class Actions
     public function setActif(bool $actif): static
     {
         $this->actif = $actif;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SuppInter>
+     */
+    public function getSuppInters(): Collection
+    {
+        return $this->suppInters;
+    }
+
+    public function addSuppInter(SuppInter $suppInter): static
+    {
+        if (!$this->suppInters->contains($suppInter)) {
+            $this->suppInters->add($suppInter);
+            $suppInter->addAction($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuppInter(SuppInter $suppInter): static
+    {
+        if ($this->suppInters->removeElement($suppInter)) {
+            $suppInter->removeAction($this);
+        }
 
         return $this;
     }

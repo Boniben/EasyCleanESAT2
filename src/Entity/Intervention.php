@@ -62,6 +62,12 @@ class Intervention
     #[ORM\OneToMany(targetEntity: Plage::class, mappedBy: 'intervention')]
     private Collection $plages;
 
+    /**
+     * @var Collection<int, SuppInter>
+     */
+    #[ORM\OneToMany(targetEntity: SuppInter::class, mappedBy: 'intervention')]
+    private Collection $suppInters;
+
     public function __construct()
     {
         $this->elementSecurites = new ArrayCollection();
@@ -70,6 +76,7 @@ class Intervention
         $this->numVersion = 1;
         $this->dureeHeure = 0;
         $this->dureeMinute = 0;
+        $this->suppInters = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -266,6 +273,36 @@ class Intervention
             // set the owning side to null (unless already changed)
             if ($plage->getIntervention() === $this) {
                 $plage->setIntervention(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SuppInter>
+     */
+    public function getSuppInters(): Collection
+    {
+        return $this->suppInters;
+    }
+
+    public function addSuppInter(SuppInter $suppInter): static
+    {
+        if (!$this->suppInters->contains($suppInter)) {
+            $this->suppInters->add($suppInter);
+            $suppInter->setIntervention($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSuppInter(SuppInter $suppInter): static
+    {
+        if ($this->suppInters->removeElement($suppInter)) {
+            // set the owning side to null (unless already changed)
+            if ($suppInter->getIntervention() === $this) {
+                $suppInter->setIntervention(null);
             }
         }
 
