@@ -12,9 +12,9 @@
         <thead>
             <tr>
                 <th>Id</th>
+                <th>Picto</th>
                 <th>Nom</th>
                 <th>Code</th>
-                <th>Picto</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -22,11 +22,11 @@
         {% for moyen_dosage in moyen_dosages %}
             <tr>
                 <td>{{ moyen_dosage.id }}</td>
-                <td>{{ moyen_dosage.nom }}</td>
-                <td>{{ moyen_dosage.code }}</td>
                 <td>
                     <img src="{{ asset('PictoMoyenDosagePNG/' ~ moyen_dosage.id ~ '.png') }}" alt="Pictogramme {{ moyen_dosage.nom }}" style="max-height: 40px;">
                 </td>
+                <td>{{ moyen_dosage.nom }}</td>
+                <td>{{ moyen_dosage.code }}</td>
                 <td>
                     <div style="display: flex; gap: 8px;">
                         <a href="{{ path('app_moyen_dosage_show', {'id': moyen_dosage.id}) }}" class="btn btn-sm btn-outline-secondary" title="Afficher" aria-label="Afficher">
