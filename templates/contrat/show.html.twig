@@ -22,40 +22,43 @@
 		</div>
 	</div>
 
-	{% for zone in contrat.sitesClient.zonesClients %}
-		<div class="card">
-			<div class="card-header">
-				<h2>{{ zone.nom }}</h2>
-				<div class="btn-group">
-					<span class="badge badge-primary">{{ zone.typeZone ? zone.typeZone.nom : 'Sans type' }}</span>
-					<a href="{{ path('app_zones_client_edit', {'id': zone.id}) }}" class="btn btn-secondary">Modifier</a>
-				</div>
-			</div>
-
-			<h3>Supports</h3>
-			{% if zone.supportsClient|length > 0 %}
-				<ul class="info-list">
-					{% for support in zone.supportsClient %}
-						<li>
-							<span class="info-label">Support :</span>
-							<span>{{ support.typeSupport.nom }}</span>
-						</li>
+	{% if contrat.interventions|length > 0 %}
+		<div class="table-wrapper">
+			<table>
+				<thead>
+					<tr>
+						<th>Intervention</th>
+						<th>Zone</th>
+						<th>Version</th>
+						<th>Rédacteur</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for intervention in contrat.interventions %}
+						<tr>
+							<td>#{{ intervention.id }}</td>
+							<td>{{ intervention.zonesClient.nom }}</td>
+							<td>v{{ intervention.numVersion }}</td>
+							<td>{{ intervention.redacteur ? intervention.redacteur.initial : '—' }}</td>
+							<td>
+								<div class="btn-group">
+									<a href="{{ path('app_intervention_show', {'id': intervention.id}) }}" class="btn btn-sm btn-primary">Voir</a>
+									<a href="{{ path('app_intervention_edit', {'id': intervention.id}) }}" class="btn btn-sm btn-secondary">Modifier</a>
+								</div>
+							</td>
+						</tr>
 					{% endfor %}
-				</ul>
-			{% else %}
-				<p class="text-muted text-sm">Aucun support pour cette zone</p>
-			{% endif %}
-
-			<a href="{{ path('app_support_client_new', {'zone_id': zone.id}) }}" class="btn btn-primary">Ajouter un support</a>
+				</tbody>
+			</table>
 		</div>
 	{% else %}
 		<div class="card">
 			<div class="empty-state">
-				<p>Aucune zone pour ce site</p>
-				<a href="{{ path('app_zones_client_new', {'site_id': contrat.sitesClient.id}) }}" class="btn btn-primary">Ajouter une zone</a>
+				<p>Aucune intervention pour ce contrat</p>
 			</div>
 		</div>
-	{% endfor %}
+	{% endif %}
 
 	<div class="btn-group mt-3">
 		<a href="{{ path('app_client_show', {'id': contrat.sitesClient.client.id}) }}" class="btn btn-secondary">← Retour au client</a>

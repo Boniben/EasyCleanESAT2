@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/support/client')]
 final class SupportClientController extends AbstractController
@@ -55,8 +56,11 @@ final class SupportClientController extends AbstractController
             }
         }
 
+        $allTypeSupports = $entityManager->getRepository(\App\Entity\TypeSupport::class)->findBy([], ['nom' => 'ASC']);
+
         return $this->render('support_client/new.html.twig', [
             'zone' => $zone,
+            'allTypeSupports' => $allTypeSupports,
         ]);
     }
 
@@ -87,14 +91,21 @@ final class SupportClientController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/{id}', name: 'app_support_client_delete', methods: ['POST'])]
     public function delete(Request $request, SupportClient $supportClient, EntityManagerInterface $entityManager): Response
     {
-        $clientId = $supportClient->getZonesClient()->getSitesClient()->getClient()->getId();
         if ($this->isCsrfTokenValid('delete' . $supportClient->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($supportClient);
             $entityManager->flush();
         }
+
+        $contratId = $request->request->get('contrat_id');
+        if ($contratId) {
+            return $this->redirectToRoute('app_contrat_show', ['id' => $contratId], Response::HTTP_SEE_OTHER);
+        }
+
+        $clientId = $supportClient->getZonesClient()->getSitesClient()->getClient()->getId();
         return $this->redirectToRoute('app_client_show', ['id' => $clientId], Response::HTTP_SEE_OTHER);
     }
 }

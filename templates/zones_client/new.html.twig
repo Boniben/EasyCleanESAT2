@@ -29,7 +29,7 @@
 			<label>Type de zone</label>
 			<div style="display:flex; gap:8px;">
 				<input type="text" id="search-type-zone" placeholder="Rechercher un type de zone (ex: sanitaire, bureau, cuisine...)" style="flex:1; padding:10px; border:1px solid var(--color-border); border-radius:8px; font-size:0.95rem;">
-				<button type="button" id="btn-search-zone" class="btn btn-primary">Rechercher</button>
+				<button type="button" onclick="doTypeZoneSearch()" class="btn btn-primary">Rechercher</button>
 			</div>
 		</div>
 
@@ -48,95 +48,71 @@
 	<a href="{{ path('app_client_index') }}" class="btn btn-secondary" style="margin-top:12px;">Retour a la liste</a>
 
 	<script>
-		const searchInput = document.getElementById('search-type-zone');
-const resultsContainer = document.getElementById('results-type-zone');
-const selectedContainer = document.getElementById('selected-type-zone');
-const typeZoneSelect = document.getElementById('{{ form.typeZone.vars.id }}');
-let selectedId = typeZoneSelect.value || null;
+		window.addEventListener('pageshow', function(e) { if (e.persisted) window.location.reload(); });
 
-if (selectedId) {
-const opt = typeZoneSelect.querySelector('option[value="' + selectedId + '"]');
-if (opt) 
-showSelected(selectedId, opt.textContent, '');
+		var _tzApiUrl   = '{{ path("api_type_zone_search") }}';
+		var _tzPictoBase = '{{ asset("PictoTypeZonePNG/") }}';
+		var _tzSelectedId = null;
 
-}
+		var _tzSelect = document.getElementById('{{ form.typeZone.vars.id }}');
+		var _tzResults = document.getElementById('results-type-zone');
+		var _tzSelected = document.getElementById('selected-type-zone');
+		var _tzInput = document.getElementById('search-type-zone');
 
-function doSearch() {
-const query = searchInput.value.trim();
-if (query.length < 2) {
-resultsContainer.innerHTML = '';
-return;
-}
+		document.getElementById('search-type-zone').addEventListener('keydown', function(e) {
+			if (e.key === 'Enter') { e.preventDefault(); doTypeZoneSearch(); }
+		});
 
-fetch('{{ path("api_type_zone_search") }}?q=' + encodeURIComponent(query)).then(r => r.json()).then(data => {
-resultsContainer.innerHTML = '';
-if (data.length === 0) {
-resultsContainer.innerHTML = '<p style="color:var(--color-text-secondary); grid-column:1/-1;">Aucun type trouve</p>';
-return;
-}
-data.forEach(item => {
-const card = document.createElement('div');
-const isSelected = selectedId == item.id;
-card.style.cssText = 'padding:8px 10px; border:2px solid ' + (
-isSelected ? 'var(--color-primary)' : 'var(--color-border)'
-) + '; border-radius:6px; cursor:pointer; text-align:center; transition:all 0.15s; background:' + (
-isSelected ? '#dbe8f4' : 'var(--color-surface)'
-) + ';';
-card.innerHTML = (item.picto ? '<img src=" {{ asset("PictoTypeZonePNG/") }}' + item.picto + '" alt="' + item.nom + '" style="max-height:50px; margin-bottom:4px;">' : '') + '<div style="font-weight:600; color:var(--color-primary); font-size:0.85rem;">' + item.nom + '</div>' + (
-item.description ? '<div style="color:var(--color-text-secondary); font-size:0.7rem; margin-top:2px;">' + item.description + '</div>' : ''
-);
+		function doTypeZoneSearch() {
+			var query = _tzInput.value.trim();
+			_tzResults.innerHTML = '';
+			if (query.length < 1) return;
 
-card.addEventListener('click', () => {
-selectTypeZone(item.id, item.nom, item.description);
-resultsContainer.querySelectorAll('div[data-tz]').forEach(c => {
-c.style.borderColor = 'var(--color-border)';
-c.style.background = 'var(--color-surface)';
-});
-card.style.borderColor = 'var(--color-primary)';
-card.style.background = '#dbe8f4';
-});
-card.addEventListener('mouseenter', () => {
-if (selectedId != item.id) 
-card.style.borderColor = 'var(--color-primary)';
+			fetch(_tzApiUrl + '?q=' + encodeURIComponent(query))
+				.then(function(r) { return r.json(); })
+				.then(function(data) {
+					_tzResults.innerHTML = '';
+					if (!data.length) {
+						_tzResults.innerHTML = '<p style="color:var(--color-text-secondary);grid-column:1/-1;">Aucun type trouvé</p>';
+						return;
+					}
+					data.forEach(function(item) {
+						var card = document.createElement('div');
+						var sel = _tzSelectedId == item.id;
+						card.style.cssText = 'padding:8px 10px;border:2px solid ' + (sel ? 'var(--color-primary)' : 'var(--color-border)') + ';border-radius:6px;cursor:pointer;text-align:center;transition:all .15s;background:' + (sel ? '#dbe8f4' : 'var(--color-surface)') + ';';
+						card.innerHTML = (item.picto ? '<img src="' + _tzPictoBase + item.picto + '" alt="' + item.nom + '" style="max-height:50px;margin-bottom:4px;">' : '') +
+							'<div style="font-weight:600;color:var(--color-primary);font-size:.85rem;">' + item.nom + '</div>' +
+							(item.description ? '<div style="color:var(--color-text-secondary);font-size:.7rem;margin-top:2px;">' + item.description + '</div>' : '');
+						card.setAttribute('data-tz', item.id);
+						card.onclick = function() { tzSelect(item.id, item.nom); };
+						_tzResults.appendChild(card);
+					});
+				})
+				.catch(function() {
+					_tzResults.innerHTML = '<p style="color:red;grid-column:1/-1;">Erreur lors de la recherche.</p>';
+				});
+		}
 
-});
-card.addEventListener('mouseleave', () => {
-if (selectedId != item.id) 
-card.style.borderColor = 'var(--color-border)';
+		function tzSelect(id, nom) {
+			_tzSelectedId = id;
+			if (_tzSelect) _tzSelect.value = id;
+			_tzSelected.innerHTML = '<div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:#dbe8f4;border:2px solid var(--color-primary);border-radius:6px;">' +
+				'<strong style="color:var(--color-primary);font-size:.85rem;">' + nom + '</strong>' +
+				'<button type="button" onclick="tzClear()" style="background:none;border:none;cursor:pointer;font-size:1rem;">✕</button></div>';
+			_tzResults.querySelectorAll('[data-tz]').forEach(function(c) {
+				c.style.borderColor = c.getAttribute('data-tz') == id ? 'var(--color-primary)' : 'var(--color-border)';
+				c.style.background   = c.getAttribute('data-tz') == id ? '#dbe8f4' : 'var(--color-surface)';
+			});
+		}
 
-});
-card.setAttribute('data-tz', item.id);
-resultsContainer.appendChild(card);
-});
-});
-}
-
-document.getElementById('btn-search-zone').addEventListener('click', doSearch);
-searchInput.addEventListener('keydown', function (e) {
-if (e.key === 'Enter') {
-e.preventDefault();
-doSearch();
-}
-});
-
-function selectTypeZone(id, nom, desc) {
-selectedId = id;
-typeZoneSelect.value = id;
-showSelected(id, nom, desc);
-}
-
-function showSelected(id, nom, desc) {
-selectedContainer.innerHTML = '<div style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; background:#dbe8f4; border:2px solid var(--color-primary); border-radius:6px;">' + '<strong style="color:var(--color-primary); font-size:0.85rem;">' + nom + '</strong>' + '<button type="button" onclick="clearSelection()" style="background:none; border:none; color:var(--color-text-secondary); cursor:pointer; font-size:1rem;">x</button>' + '</div>';
-}
-
-function clearSelection() {
-selectedId = null;
-typeZoneSelect.value = '';
-selectedContainer.innerHTML = '';
-resultsContainer.querySelectorAll('div[data-tz]').forEach(c => {
-c.style.borderColor = 'var(--color-border)';
-c.style.background = 'var(--color-surface)';
-});
-}
+		function tzClear() {
+			_tzSelectedId = null;
+			if (_tzSelect) _tzSelect.value = '';
+			_tzSelected.innerHTML = '';
+			_tzResults.querySelectorAll('[data-tz]').forEach(function(c) {
+				c.style.borderColor = 'var(--color-border)';
+				c.style.background  = 'var(--color-surface)';
+			});
+		}
 	</script>
 {% endblock %}

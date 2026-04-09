@@ -16,15 +16,54 @@
 		{% endif %}
 	</div>
 
+	{% if zone and zone.supportsClient|length > 0 %}
+		<div class="card" style="margin-bottom:1.5rem;">
+			<div class="card-header">
+				<h2>Supports déjà ajoutés</h2>
+				<span class="badge badge-primary">{{ zone.supportsClient|length }}</span>
+			</div>
+			<div class="table-wrapper" style="margin-top:0.75rem;">
+				<table>
+					<thead>
+						<tr>
+							<th>Picto</th>
+							<th>Nom du support</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for support in zone.supportsClient %}
+							<tr>
+								<td style="width:60px; text-align:center;">
+									{% if support.typeSupport.picto %}
+										<img src="{{ asset('PictoTypeSupportPNG/' ~ support.typeSupport.picto) }}" alt="{{ support.typeSupport.nom }}" style="max-height:28px;">
+									{% else %}
+										—
+									{% endif %}
+								</td>
+								<td>{{ support.typeSupport.nom }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{% endif %}
+
 	<form method="POST" id="support-form">
 		<input type="hidden" name="zone_id" value="{{ zone ? zone.id : '' }}">
 
 		<div class="form-card">
 			<div class="form-row">
 				<label>Rechercher un type de support</label>
-				<div style="display:flex; gap:8px;">
-					<input type="text" id="search-type-support" placeholder="Rechercher (ex: sanitaire, sol, bureau...)" style="flex:1; padding:10px; border:1px solid var(--color-border); border-radius:8px; font-size:0.95rem;">
+				<div style="display:flex; gap:8px; flex-wrap:wrap;">
+					<input type="text" id="search-type-support" placeholder="Rechercher (ex: sanitaire, sol, bureau...)" style="flex:1; min-width:180px; padding:10px; border:1px solid var(--color-border); border-radius:8px; font-size:0.95rem;">
 					<button type="button" id="btn-search-support" class="btn btn-primary">Rechercher</button>
+					<select id="select-all-type-support" style="flex:1; min-width:180px; padding:10px; border:1px solid var(--color-border); border-radius:8px; font-size:0.95rem; background:white; cursor:pointer;">
+						<option value="">— Tous les types de support —</option>
+						{% for ts in allTypeSupports %}
+							<option value="{{ ts.id }}" data-nom="{{ ts.nom }}" data-description="{{ ts.description }}">{{ ts.nom }}</option>
+						{% endfor %}
+					</select>
 				</div>
 			</div>
 
@@ -112,6 +151,19 @@ if (e.key === 'Enter') {
 e.preventDefault();
 doSearch();
 }
+});
+
+document.getElementById('select-all-type-support').addEventListener('change', function () {
+const opt = this.options[this.selectedIndex];
+if (!opt.value) return;
+const id = opt.value;
+const nom = opt.getAttribute('data-nom');
+const desc = opt.getAttribute('data-description') || '';
+if (!selectedSupports[id]) {
+selectedSupports[id] = { id: id, nom: nom, description: desc };
+renderSelected();
+}
+this.value = '';
 });
 
 function renderSelected() {
