@@ -17,15 +17,11 @@ class ZonesClientType extends AbstractType
     {
         $builder
             ->add('nom')
-            ->add('sitesClient', EntityType::class, [
-                'class' => SitesClient::class,
-                'choice_label' => 'nom',
-            ])
             ->add('typeZone', EntityType::class, [
                 'class' => TypeZone::class,
                 'choice_label' => 'nom',
                 'required' => false,
-                'attr' => ['style' => 'display:none'],
+                'placeholder' => '— Choisir un type de zone —',
             ])
         ;
     }

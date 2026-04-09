@@ -1,14 +1,33 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier une zone client
-{% endblock %}
+{% block title %}Modifier — {{ zones_client.nom }}{% endblock %}
 
 {% block body %}
-	<h1>Modifier une zone client</h1>
+    <div class="page-header">
+        <div>
+            <h1>Modifier la zone</h1>
+            <p class="text-muted text-sm">{{ zones_client.sitesClient.client.nom }} — {{ zones_client.sitesClient.nom }}</p>
+        </div>
+    </div>
 
-	{{ include('zones_client/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    <div class="form-card">
+        {{ form_start(form) }}
 
-	<a href="{{ path('app_zones_client_index') }}">Retour à la liste</a>
+            <div class="form-group">
+                {{ form_label(form.nom, 'Nom de la zone') }}
+                {{ form_widget(form.nom) }}
+            </div>
 
-	{{ include('zones_client/_delete_form.html.twig') }}
+            <div class="form-group">
+                {{ form_label(form.typeZone, 'Type de zone') }}
+                {{ form_widget(form.typeZone) }}
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Enregistrer</button>
+                <a href="{{ path('app_zones_client_show', {'id': zones_client.id}) }}" class="btn btn-secondary">Annuler</a>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
 {% endblock %}

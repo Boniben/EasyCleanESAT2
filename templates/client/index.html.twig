@@ -6,6 +6,8 @@
 		<h1>Liste des clients</h1>
 		{% if app.user and is_granted('ROLE_ADMIN') %}
 			<a href="{{ path('app_client_new') }}" class="btn btn-primary">+ Ajouter un client</a>
+		{% else %}
+			<a href="{{ path('app_login') }}" class="btn btn-danger">+ Ajouter un client</a>
 		{% endif %}
 	</div>
 	<div class="table-wrapper">

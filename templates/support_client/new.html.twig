@@ -1,147 +1,124 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter des supports
-{% endblock %}
+{% block title %}Ajouter des supports{% endblock %}
 
 {% block body %}
-	<div class="page-header">
-		<h1>Ajouter des supports</h1>
-		{% if zone %}
-			<p class="text-muted text-sm">Zone :
-				{{ zone.nom }}
-				-
-				{{ zone.sitesClient.nom }}
-				-
-				{{ zone.sitesClient.client.nom }}</p>
-		{% endif %}
-	</div>
+    <div class="page-header">
+        <div>
+            <h1>Ajouter des supports</h1>
+            {% if zone %}
+                <p class="text-muted text-sm">{{ zone.nom }} — {{ zone.sitesClient.nom }} — {{ zone.sitesClient.client.nom }}</p>
+            {% endif %}
+        </div>
+    </div>
 
-	<form method="POST" id="support-form">
-		<input type="hidden" name="zone_id" value="{{ zone ? zone.id : '' }}">
+    {# Supports déjà assignés #}
+    {% if zone and zone.supportsClient|length > 0 %}
+        <div class="card" style="margin-bottom: 1.25rem;">
+            <h3 style="margin-bottom: 0.25rem;">Supports déjà assignés</h3>
+            <p class="text-muted text-sm" style="margin-bottom: 0.75rem;">Cliquer sur un support pour le retirer</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                {% for support in zone.supportsClient %}
+                    <form method="POST" action="{{ path('app_support_client_delete', {'id': support.id}) }}" style="margin:0;" data-turbo="false">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ support.id) }}">
+                        <button type="submit" title="Retirer {{ support.typeSupport.nom }}" style="
+                            background: none; border: 2px solid var(--color-border); border-radius: var(--radius-lg);
+                            padding: 0.6rem 0.5rem; cursor: pointer; display: flex; flex-direction: column;
+                            align-items: center; gap: 0.3rem; transition: all 0.2s ease; min-width: 70px;
+                        "
+                        onmouseenter="this.style.borderColor='var(--color-danger)';this.style.background='#fdf0f0';"
+                        onmouseleave="this.style.borderColor='var(--color-border)';this.style.background='none';">
+                            {% if support.typeSupport.picto %}
+                                <img src="{{ asset('PictoTypeSupportPNG/' ~ support.typeSupport.picto) }}"
+                                     alt="{{ support.typeSupport.nom }}"
+                                     style="width: 52px; height: 52px; object-fit: contain; pointer-events: none;">
+                            {% else %}
+                                <div style="width:52px;height:52px;background:var(--color-primary-light);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.5rem;pointer-events:none;">🪣</div>
+                            {% endif %}
+                            <span style="font-size:0.72rem;color:var(--color-text-secondary);text-align:center;max-width:70px;pointer-events:none;">{{ support.typeSupport.nom }}</span>
+                        </button>
+                    </form>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 
-		<div class="form-card">
-			<div class="form-row">
-				<label>Rechercher un type de support</label>
-				<div style="display:flex; gap:8px;">
-					<input type="text" id="search-type-support" placeholder="Rechercher (ex: sanitaire, sol, bureau...)" style="flex:1; padding:10px; border:1px solid var(--color-border); border-radius:8px; font-size:0.95rem;">
-					<button type="button" id="btn-search-support" class="btn btn-primary">Rechercher</button>
-				</div>
-			</div>
+    {# Supports disponibles à ajouter #}
+    <form method="POST" id="support-form" data-turbo="false">
+        <input type="hidden" name="zone_id" value="{{ zone ? zone.id : '' }}">
 
-			<div class="form-row">
-				<label>Supports selectionnes</label>
-				<div id="selected-supports" style="display:flex; flex-wrap:wrap; gap:8px; min-height:40px; padding:8px; border:1px dashed var(--color-border); border-radius:8px;"></div>
-			</div>
-		</div>
+        {% if availableTypeSupports|length > 0 %}
+            <h3 style="margin-bottom: 1rem;">Cliquer pour ajouter</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+                {% for ts in availableTypeSupports %}
+                    <div class="support-tile"
+                         data-id="{{ ts.id }}"
+                         data-nom="{{ ts.nom }}"
+                         style="
+                            display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+                            padding: 0.75rem 0.5rem;
+                            border: 2px solid var(--color-border);
+                            border-radius: var(--radius-lg);
+                            background: white;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                            text-align: center;
+                         ">
+                        {% if ts.picto %}
+                            <img src="{{ asset('PictoTypeSupportPNG/' ~ ts.picto) }}"
+                                 alt="{{ ts.nom }}"
+                                 style="width: 52px; height: 52px; object-fit: contain; pointer-events: none;">
+                        {% else %}
+                            <div style="width:52px;height:52px;background:var(--color-primary-light);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.5rem;pointer-events:none;">🪣</div>
+                        {% endif %}
+                        <span style="font-size: 0.78rem; font-weight: 600; color: var(--color-primary-hover); pointer-events: none;">{{ ts.nom }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">Tous les types de support sont déjà assignés à cette zone.</p>
+        {% endif %}
 
-		<div id="results-type-support" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:8px; margin:16px 0;"></div>
+        <div class="btn-group">
+            <button class="btn btn-primary" type="submit" id="btn-save" disabled>Sauvegarder</button>
+            <a href="{{ zone ? path('app_zones_client_show', {'id': zone.id}) : path('app_client_index') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
 
-		<div style="margin-top:16px;">
-			<button class="btn btn-primary" type="submit" id="btn-save" disabled>Sauvegarder</button>
-			<a href="{{ zone ? path('app_zones_client_show', {'id': zone.id}) : path('app_client_index') }}" class="btn btn-secondary">Annuler</a>
-		</div>
-	</form>
+    <script>
+    const form = document.getElementById('support-form');
+    const btnSave = document.getElementById('btn-save');
+    const selected = {};
 
-	<script>
-		const searchInput = document.getElementById('search-type-support');
-const resultsContainer = document.getElementById('results-type-support');
-const selectedContainer = document.getElementById('selected-supports');
-const btnSave = document.getElementById('btn-save');
-const form = document.getElementById('support-form');
-let selectedSupports = {};
+    document.querySelectorAll('.support-tile').forEach(tile => {
+        tile.addEventListener('click', () => {
+            const id = tile.dataset.id;
+            if (selected[id]) {
+                delete selected[id];
+                tile.style.borderColor = 'var(--color-border)';
+                tile.style.background = 'white';
+                tile.style.transform = '';
+                form.querySelector('input[name="type_support_ids[]"][value="' + id + '"]')?.remove();
+            } else {
+                selected[id] = true;
+                tile.style.borderColor = 'var(--color-success)';
+                tile.style.background = '#eaf5ef';
+                tile.style.transform = 'scale(1.05)';
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'type_support_ids[]';
+                hidden.value = id;
+                form.appendChild(hidden);
+            }
+            btnSave.disabled = Object.keys(selected).length === 0;
+        });
 
-function doSearch() {
-const query = searchInput.value.trim();
-if (query.length < 2) {
-resultsContainer.innerHTML = '';
-return;
-}
-
-fetch('{{ path("api_type_support_search") }}?q=' + encodeURIComponent(query)).then(r => r.json()).then(data => {
-resultsContainer.innerHTML = '';
-if (data.length === 0) {
-resultsContainer.innerHTML = '<p style="color:var(--color-text-secondary); grid-column:1/-1;">Aucun support trouve</p>';
-return;
-}
-data.forEach(item => {
-const card = document.createElement('div');
-const isSelected = selectedSupports[item.id] !== undefined;
-card.style.cssText = 'padding:8px 10px; border:2px solid ' + (
-isSelected ? 'var(--color-primary)' : 'var(--color-border)'
-) + '; border-radius:6px; cursor:pointer; text-align:center; transition:all 0.15s; background:' + (
-isSelected ? '#dbe8f4' : 'var(--color-surface)'
-) + ';';
-card.innerHTML = (item.picto ? '<img src=" {{ asset("PictoTypeSupportPNG/") }}' + item.picto + '" alt="' + item.nom + '" style="max-height:50px; margin-bottom:4px;">' : '') + '<div style="font-weight:600; color:var(--color-primary); font-size:0.85rem;">' + item.nom + '</div>' + (
-item.description ? '<div style="color:var(--color-text-secondary); font-size:0.7rem; margin-top:2px;">' + item.description + '</div>' : ''
-);
-
-card.addEventListener('click', () => {
-if (selectedSupports[item.id]) {
-delete selectedSupports[item.id];
-card.style.borderColor = 'var(--color-border)';
-card.style.background = 'var(--color-surface)';
-} else {
-selectedSupports[item.id] = {
-id: item.id,
-nom: item.nom,
-description: item.description
-};
-card.style.borderColor = 'var(--color-primary)';
-card.style.background = '#dbe8f4';
-} renderSelected();
-});
-card.addEventListener('mouseenter', () => {
-if (! selectedSupports[item.id]) 
-card.style.borderColor = 'var(--color-primary)';
-
-});
-card.addEventListener('mouseleave', () => {
-if (! selectedSupports[item.id]) 
-card.style.borderColor = 'var(--color-border)';
-
-});
-card.setAttribute('data-ts', item.id);
-resultsContainer.appendChild(card);
-});
-});
-}
-
-document.getElementById('btn-search-support').addEventListener('click', doSearch);
-searchInput.addEventListener('keydown', function (e) {
-if (e.key === 'Enter') {
-e.preventDefault();
-doSearch();
-}
-});
-
-function renderSelected() {
-selectedContainer.innerHTML = '';
-form.querySelectorAll('input[name="type_support_ids[]"]').forEach(el => el.remove());
-const ids = Object.keys(selectedSupports);
-btnSave.disabled = ids.length === 0;
-
-ids.forEach(id => {
-const s = selectedSupports[id];
-const badge = document.createElement('div');
-badge.style.cssText = 'display:inline-flex; align-items:center; gap:6px; padding:5px 10px; background:#dbe8f4; border:2px solid var(--color-primary); border-radius:6px;';
-badge.innerHTML = '<strong style="color:var(--color-primary); font-size:0.8rem;">' + s.nom + '</strong>' + '<button type="button" style="background:none; border:none; color:var(--color-text-secondary); cursor:pointer; font-size:0.9rem;" data-id="' + id + '">x</button>';
-badge.querySelector('button').addEventListener('click', () => {
-delete selectedSupports[id];
-renderSelected();
-const card = resultsContainer.querySelector('[data-ts="' + id + '"]');
-if (card) {
-card.style.borderColor = 'var(--color-border)';
-card.style.background = 'var(--color-surface)';
-}
-});
-selectedContainer.appendChild(badge);
-
-const hidden = document.createElement('input');
-hidden.type = 'hidden';
-hidden.name = 'type_support_ids[]';
-hidden.value = id;
-form.appendChild(hidden);
-});
-}
-	</script>
+        tile.addEventListener('mouseenter', () => {
+            if (!selected[tile.dataset.id]) tile.style.borderColor = 'var(--color-primary)';
+        });
+        tile.addEventListener('mouseleave', () => {
+            if (!selected[tile.dataset.id]) tile.style.borderColor = 'var(--color-border)';
+        });
+    });
+    </script>
 {% endblock %}
