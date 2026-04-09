@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/support/client')]
 final class SupportClientController extends AbstractController
@@ -100,6 +101,7 @@ final class SupportClientController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_ADMIN')]
     #[Route('/{id}', name: 'app_support_client_delete', methods: ['POST'])]
     public function delete(Request $request, SupportClient $supportClient, EntityManagerInterface $entityManager): Response
     {
