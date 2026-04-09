@@ -56,11 +56,21 @@ final class SupportClientController extends AbstractController
             }
         }
 
+        // IDs déjà assignés à la zone
+        $assignedIds = [];
+        if ($zone) {
+            foreach ($zone->getSupportsClient() as $sc) {
+                $assignedIds[] = $sc->getTypeSupport()->getId();
+            }
+        }
+
         $allTypeSupports = $entityManager->getRepository(\App\Entity\TypeSupport::class)->findBy([], ['nom' => 'ASC']);
 
+        $availableTypeSupports = array_filter($allTypeSupports, fn($ts) => !in_array($ts->getId(), $assignedIds));
+
         return $this->render('support_client/new.html.twig', [
-            'zone' => $zone,
-            'allTypeSupports' => $allTypeSupports,
+            'zone'                 => $zone,
+            'availableTypeSupports' => array_values($availableTypeSupports),
         ]);
     }
 
@@ -95,17 +105,12 @@ final class SupportClientController extends AbstractController
     #[Route('/{id}', name: 'app_support_client_delete', methods: ['POST'])]
     public function delete(Request $request, SupportClient $supportClient, EntityManagerInterface $entityManager): Response
     {
+        $zone = $supportClient->getZonesClient();
+        $zoneId = $zone->getId();
         if ($this->isCsrfTokenValid('delete' . $supportClient->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($supportClient);
             $entityManager->flush();
         }
-
-        $contratId = $request->request->get('contrat_id');
-        if ($contratId) {
-            return $this->redirectToRoute('app_contrat_show', ['id' => $contratId], Response::HTTP_SEE_OTHER);
-        }
-
-        $clientId = $supportClient->getZonesClient()->getSitesClient()->getClient()->getId();
-        return $this->redirectToRoute('app_client_show', ['id' => $clientId], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_support_client_new', ['zone_id' => $zoneId], Response::HTTP_SEE_OTHER);
     }
 }

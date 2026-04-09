@@ -750,7 +750,7 @@
 				<nav class="header-nav">
 					<a class="btn btn-sm" href="{{ path('app_client_index') }}">Clients</a>
 					{% if app.request.attributes.get('_route') != 'app_dashboard' %}
-						<a class="btn btn-sm" href="{{ path('app_dashboard') }}">Tableau de bord</a>
+						<a class="btn btn-sm" href="{{ path('app_dashboard') }}">Retour page d'accueil</a>
 					{% endif %}
 					{% if app.user %}
 						<a class="btn btn-sm btn-danger" href="{{ path('app_logout') }}">Déconnexion</a>

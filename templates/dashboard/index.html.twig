@@ -1,30 +1,238 @@
 {% extends 'base.html.twig' %}
-{% block title %}Dashboard
+{% block title %}EasyCleanESAT{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+    /* ============================================================
+       ACCUEIL — page de bienvenue
+       ============================================================ */
+
+    /* Retire le padding générique de app-main pour cette page */
+    .app-main { padding: 0 !important; }
+
+    .accueil-page {
+        min-height: calc(100vh - 60px - 56px); /* header + footer */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1.5rem;
+        background:
+            radial-gradient(ellipse at 20% 50%, rgba(61,90,128,0.12) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 20%, rgba(44,68,96,0.10) 0%, transparent 55%),
+            var(--color-bg);
+    }
+
+    /* ---- Logo ---- */
+    .accueil-logo-wrap {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .accueil-logo {
+        max-height: 110px;
+        max-width: 280px;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 16px rgba(61,90,128,0.18));
+    }
+    .accueil-logo-fallback {
+        width: 110px;
+        height: 110px;
+        background: linear-gradient(135deg, var(--color-primary), var(--header-bg));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        box-shadow: 0 8px 32px rgba(61,90,128,0.25);
+    }
+
+    /* ---- Encart titre ---- */
+    .accueil-hero {
+        background: white;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        box-shadow: 0 8px 40px rgba(61,90,128,0.12);
+        padding: 2.5rem 3rem;
+        text-align: center;
+        max-width: 620px;
+        width: 100%;
+        margin-bottom: 2.5rem;
+    }
+    .accueil-hero__app-name {
+        font-family: var(--font-heading);
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        margin-bottom: 0.6rem;
+    }
+    .accueil-hero__app-name span {
+        color: var(--header-bg);
+    }
+    .accueil-hero__tagline {
+        font-size: 1.05rem;
+        color: var(--color-text-secondary);
+        line-height: 1.6;
+        margin: 0;
+    }
+    .accueil-hero__divider {
+        width: 48px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--color-primary), var(--header-bg));
+        border-radius: 999px;
+        margin: 1.2rem auto;
+    }
+
+    /* ---- Cartes d'action ---- */
+    .accueil-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        max-width: 620px;
+        width: 100%;
+    }
+
+    .accueil-card {
+        background: white;
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 2rem 1.5rem;
+        text-decoration: none;
+        color: var(--color-text);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 12px rgba(61,90,128,0.07);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    .accueil-card:hover {
+        border-color: var(--color-primary);
+        box-shadow: 0 12px 40px rgba(61,90,128,0.18);
+        transform: translateY(-4px);
+        color: var(--color-text);
+    }
+
+    /* Icône de chaque carte */
+    .accueil-card__icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        flex-shrink: 0;
+        transition: transform 0.25s ease;
+    }
+    .accueil-card:hover .accueil-card__icon {
+        transform: scale(1.08);
+    }
+    .icon-clients {
+        background: linear-gradient(135deg, #dce4ed, #b8ccdf);
+    }
+    .icon-admin {
+        background: linear-gradient(135deg, #f3d6d6, #e8b8b8);
+    }
+
+    .accueil-card__title {
+        font-family: var(--font-heading);
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--color-primary-hover);
+        line-height: 1.3;
+    }
+    .accueil-card__desc {
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+        line-height: 1.5;
+        margin: 0;
+    }
+    .accueil-card__arrow {
+        font-size: 1.2rem;
+        color: var(--color-primary);
+        margin-top: auto;
+        transition: transform 0.2s ease;
+    }
+    .accueil-card:hover .accueil-card__arrow {
+        transform: translateX(4px);
+    }
+
+    /* Variante admin — style distinct si connecté */
+    .accueil-card--admin {
+        border-color: #e8b8b8;
+    }
+    .accueil-card--admin:hover {
+        border-color: var(--color-danger);
+        box-shadow: 0 12px 40px rgba(184,50,50,0.13);
+    }
+    .accueil-card--admin .accueil-card__title { color: var(--color-danger); }
+    .accueil-card--admin .accueil-card__arrow { color: var(--color-danger); }
+
+    @media (max-width: 540px) {
+        .accueil-cards { grid-template-columns: 1fr; }
+        .accueil-hero { padding: 2rem 1.5rem; }
+        .accueil-hero__app-name { font-size: 1.8rem; }
+    }
+    </style>
 {% endblock %}
+
 {% block body %}
-	<section class="dashboard-hero">
-		<h1>Dashboard</h1>
-		<p>Acces rapide aux actions principales de l'application</p>
-	</section>
-	<section class="dashboard-actions">
-		<a class="dashboard-action" href="{{ path('app_client_index') }}">
-			<strong>Liste des clients</strong>
-			<span>Consulter et gerer les clients.</span>
-		</a>
-		<a class="dashboard-action" href="{{ path('app_intervention_new') }}">
-			<strong>Ajouter une intervention</strong>
-			<span>Creer une nouvelle intervention.</span>
-		</a>
-		{% if app.user and is_granted('ROLE_ADMIN') %}
-			<a class="dashboard-action" href="{{ path('app_admin') }}">
-				<strong>Administration</strong>
-				<span>Gerer les clients, sites, contrats, types.</span>
-			</a>
-		{% else %}
-			<a class="dashboard-action" href="{{ path('app_login') }}">
-				<strong>Connexion admin</strong>
-				<span>Acceder aux modifications d'administration.</span>
-			</a>
-		{% endif %}
-	</section>
+<div class="accueil-page">
+
+    {# Logo Anaïs #}
+    <div class="accueil-logo-wrap">
+        <img src="{{ asset('PictoDiversPNG/anais.png') }}"
+             alt="Logo ESAT Anaïs"
+             class="accueil-logo"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="accueil-logo-fallback" style="display:none;">🧹</div>
+    </div>
+
+    {# Encart titre #}
+    <div class="accueil-hero">
+        <div class="accueil-hero__app-name">EasyClean<span>ESAT</span></div>
+        <div class="accueil-hero__divider"></div>
+        <p class="accueil-hero__tagline">
+            Logiciel de génération de fiches chantier<br>
+            d'entretien des locaux
+        </p>
+    </div>
+
+    {# 2 cartes d'action #}
+    <div class="accueil-cards">
+
+        {# Carte — Liste des clients #}
+        <a href="{{ path('app_client_index') }}" class="accueil-card">
+            <div class="accueil-card__icon icon-clients">👥</div>
+            <div class="accueil-card__title">Liste des clients</div>
+            <p class="accueil-card__desc">Consulter et gérer les clients, sites et interventions.</p>
+            <div class="accueil-card__arrow">→</div>
+        </a>
+
+        {# Carte — Admin (login si non connecté, admin si connecté) #}
+        {% if app.user and is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_admin') }}" class="accueil-card accueil-card--admin">
+                <div class="accueil-card__icon icon-admin">⚙️</div>
+                <div class="accueil-card__title">Administration</div>
+                <p class="accueil-card__desc">Gérer les types, produits, nécessaires et paramètres.</p>
+                <div class="accueil-card__arrow">→</div>
+            </a>
+        {% else %}
+            <a href="{{ path('app_login') }}" class="accueil-card accueil-card--admin">
+                <div class="accueil-card__icon icon-admin">🔐</div>
+                <div class="accueil-card__title">Connexion administrateur</div>
+                <p class="accueil-card__desc">Accéder à l'espace d'administration et de configuration.</p>
+                <div class="accueil-card__arrow">→</div>
+            </a>
+        {% endif %}
+
+    </div>
+
+</div>
 {% endblock %}
