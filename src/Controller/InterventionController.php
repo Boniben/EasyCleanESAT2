@@ -105,10 +105,70 @@ final class InterventionController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_intervention_show', methods: ['GET'])]
-    public function show(Intervention $intervention): Response
+    public function show(Intervention $intervention, JourDeLaSemaineRepository $jourRepo): Response
     {
+        // Jours de la semaine triés par id (Lundi=1 ... Vendredi=5)
+        $jours = $jourRepo->findBy([], ['id' => 'ASC']);
+
+        // Plages organisées par jour : [jourId => [plage matin, plage après-midi]]
+        $plagesByDay = [];
+        foreach ($intervention->getPlages() as $plage) {
+            $dayId = $plage->getJourDeLaSemaine()?->getId();
+            if ($dayId !== null) {
+                $plagesByDay[$dayId][] = $plage;
+            }
+        }
+        foreach ($plagesByDay as &$dp) {
+            usort($dp, fn($a, $b) => $a->getHeureDebut() <=> $b->getHeureDebut());
+        }
+        unset($dp);
+
+        // Cartes actions numérotées séquentiellement (carte 0 = Sécuriser, 1-N = SuppInter)
+        $actionCards = [];
+        $num = 1;
+        foreach ($intervention->getSuppInters() as $si) {
+            $siNums = [];
+            foreach ($si->getActions() as $action) {
+                $siNums[] = $num;
+                $actionCards[$num] = ['action' => $action, 'suppInter' => $si];
+                $num++;
+            }
+            // Mapping suppInter.id => numéros de cartes pour l'affichage du schéma
+        }
+
+        // Mapping suppInterId => liste de numéros de cartes (pour le schéma)
+        $suppInterCardNums = [];
+        $n = 1;
+        foreach ($intervention->getSuppInters() as $si) {
+            $nums = [];
+            foreach ($si->getActions() as $action) {
+                $nums[] = $n++;
+            }
+            $suppInterCardNums[$si->getId()] = $nums;
+        }
+
+        // Construction de toutes les cartes : carte 0 (Sécuriser) + cartes action 1..N
+        $allCards = [];
+        if ($intervention->getElementSecurites()->count() > 0) {
+            $allCards[] = ['type' => 'securiser'];
+        }
+        $cardNum = 1;
+        foreach ($intervention->getSuppInters() as $si) {
+            foreach ($si->getActions() as $action) {
+                $allCards[] = ['type' => 'action', 'num' => $cardNum++, 'action' => $action];
+            }
+        }
+
+        $cardPages  = array_chunk($allCards, 6);
+        $totalPages = 1 + count($cardPages);
+
         return $this->render('intervention/show.html.twig', [
-            'intervention' => $intervention,
+            'intervention'      => $intervention,
+            'jours'             => $jours,
+            'plagesByDay'       => $plagesByDay,
+            'suppInterCardNums' => $suppInterCardNums,
+            'cardPages'         => $cardPages,
+            'totalPages'        => $totalPages,
         ]);
     }
 
