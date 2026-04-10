@@ -93,14 +93,19 @@ final class InterventionController extends AbstractController
 
         $jours = $jourRepository->findBy([], ['id' => 'ASC']);
 
+        $zone = $zonesClientId
+            ? $entityManager->getRepository(\App\Entity\ZonesClient::class)->find($zonesClientId)
+            : null;
+
         return $this->render('intervention/new.html.twig', [
-            'intervention' => $intervention,
-            'form'         => $form,
-            'jours'        => $jours,
-            'plagesMap'    => [],
-            'actionsJson'  => $this->buildActionsJson($actionsRepository),
+            'intervention'  => $intervention,
+            'form'          => $form,
+            'jours'         => $jours,
+            'plagesMap'     => [],
+            'actionsJson'   => $this->buildActionsJson($actionsRepository),
             'suppInterJson' => 'null',
             'initialZoneId' => $zonesClientId,
+            'zone'          => $zone,
         ]);
     }
 
