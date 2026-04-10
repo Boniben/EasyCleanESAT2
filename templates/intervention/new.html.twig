@@ -3,7 +3,28 @@
 {% block title %}Creer Intervention{% endblock %}
 
 {% block body %}
-    <h1>Creer Intervention</h1>
+    <h1>Créer une intervention</h1>
+
+    {% if zone and zone.supportsClient|length > 0 %}
+        <div class="card" style="margin-bottom: 1.25rem;">
+            <h3 style="margin-bottom: 0.75rem;">Supports de la zone — {{ zone.nom }}</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                {% for support in zone.supportsClient %}
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem;">
+                        {% if support.typeSupport.picto %}
+                            <img src="{{ asset('PictoTypeSupportPNG/' ~ support.typeSupport.picto) }}"
+                                 alt="{{ support.typeSupport.nom }}"
+                                 title="{{ support.typeSupport.nom }}"
+                                 style="width: 52px; height: 52px; object-fit: contain;">
+                        {% else %}
+                            <div style="width:52px;height:52px;background:var(--color-primary-light);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🪣</div>
+                        {% endif %}
+                        <span style="font-size:0.72rem;color:var(--color-text-secondary);text-align:center;max-width:70px;">{{ support.typeSupport.nom }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 
     {{ include('intervention/_form.html.twig') }}
 
