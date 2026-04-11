@@ -8,10 +8,13 @@ use App\Entity\JourDeLaSemaine;
 use App\Entity\Plage;
 use App\Entity\SupportClient;
 use App\Entity\SuppInter;
+use App\Entity\Vigilance;
+use App\Entity\VigilanceIntervention;
 use App\Form\InterventionType;
 use App\Repository\ActionsRepository;
 use App\Repository\InterventionRepository;
 use App\Repository\JourDeLaSemaineRepository;
+use App\Repository\VigilanceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +44,7 @@ final class InterventionController extends AbstractController
      * Sans paramètres : formulaire vierge avec listes déroulantes dynamiques (AJAX/Stimulus)
      */
     #[Route('/new', name: 'app_intervention_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, JourDeLaSemaineRepository $jourRepository, ActionsRepository $actionsRepository): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, JourDeLaSemaineRepository $jourRepository, ActionsRepository $actionsRepository, VigilanceRepository $vigilanceRepository): Response
     {
         $intervention = new Intervention();
 
@@ -88,6 +91,13 @@ final class InterventionController extends AbstractController
             // Traitement des supports et actions
             $this->persistSuppInterData($request, $intervention, $entityManager);
 
+            // Traitement des vigilances
+            $this->persistVigilanceData($request, $intervention, $entityManager);
+
+            $contrat = $intervention->getContrat();
+            if ($contrat) {
+                return $this->redirectToRoute('app_contrat_show', ['id' => $contrat->getId()], Response::HTTP_SEE_OTHER);
+            }
             return $this->redirectToRoute('app_intervention_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -98,14 +108,16 @@ final class InterventionController extends AbstractController
             : null;
 
         return $this->render('intervention/new.html.twig', [
-            'intervention'  => $intervention,
-            'form'          => $form,
-            'jours'         => $jours,
-            'plagesMap'     => [],
-            'actionsJson'   => $this->buildActionsJson($actionsRepository),
-            'suppInterJson' => 'null',
-            'initialZoneId' => $zonesClientId,
-            'zone'          => $zone,
+            'intervention'     => $intervention,
+            'form'             => $form,
+            'jours'            => $jours,
+            'plagesMap'        => [],
+            'actionsJson'      => $this->buildActionsJson($actionsRepository),
+            'suppInterJson'    => 'null',
+            'initialZoneId'    => $zonesClientId,
+            'zone'             => $zone,
+            'vigilances'       => $vigilanceRepository->findAllActif(),
+            'vigilanceDataJson' => '[]',
         ]);
     }
 
@@ -365,14 +377,35 @@ final class InterventionController extends AbstractController
         }
         $em->flush();
 
-        // Lier les actions aux SuppInter
+        // Lier les actions aux SuppInter avec leur ordre et fréquence
         foreach ($data['actions'] ?? [] as $actionData) {
             $action = $em->getReference(Actions::class, (int)$actionData['actions_id']);
+            $ordre = (int)($actionData['ordre'] ?? 0);
+            $frequence = !empty($actionData['frequence']) ? $actionData['frequence'] : null;
             foreach ($actionData['supp_inter_positions'] as $position) {
                 if (isset($suppInterMap[(int)$position])) {
-                    $suppInterMap[(int)$position]->addAction($action);
+                    $suppInterMap[(int)$position]->addAction($action, $ordre, $frequence);
                 }
             }
+        }
+        $em->flush();
+    }
+
+    private function persistVigilanceData(Request $request, Intervention $intervention, EntityManagerInterface $em): void
+    {
+        $raw = $request->request->get('vigilance_data', '');
+        if (empty($raw)) return;
+
+        $data = json_decode($raw, true);
+        if (!is_array($data)) return;
+
+        foreach ($data as $item) {
+            $vigilance = $em->getReference(Vigilance::class, (int)$item['id']);
+            $vi = new VigilanceIntervention();
+            $vi->setVigilance($vigilance);
+            $vi->setIntervention($intervention);
+            $vi->setDetail(!empty($item['detail']) ? $item['detail'] : null);
+            $em->persist($vi);
         }
         $em->flush();
     }

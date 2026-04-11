@@ -28,15 +28,15 @@ class Actions
     private ?bool $actif = true;
 
     /**
-     * @var Collection<int, SuppInter>
+     * @var Collection<int, SuppInterActions>
      */
-    #[ORM\ManyToMany(targetEntity: SuppInter::class, mappedBy: 'actions')]
-    private Collection $suppInters;
+    #[ORM\OneToMany(targetEntity: SuppInterActions::class, mappedBy: 'action', cascade: ['remove'], orphanRemoval: true)]
+    private Collection $suppInterActions;
 
     public function __construct()
     {
         $this->necessaire = new ArrayCollection();
-        $this->suppInters = new ArrayCollection();
+        $this->suppInterActions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -93,29 +93,10 @@ class Actions
     }
 
     /**
-     * @return Collection<int, SuppInter>
+     * @return Collection<int, SuppInterActions>
      */
-    public function getSuppInters(): Collection
+    public function getSuppInterActions(): Collection
     {
-        return $this->suppInters;
-    }
-
-    public function addSuppInter(SuppInter $suppInter): static
-    {
-        if (!$this->suppInters->contains($suppInter)) {
-            $this->suppInters->add($suppInter);
-            $suppInter->addAction($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSuppInter(SuppInter $suppInter): static
-    {
-        if ($this->suppInters->removeElement($suppInter)) {
-            $suppInter->removeAction($this);
-        }
-
-        return $this;
+        return $this->suppInterActions;
     }
 }

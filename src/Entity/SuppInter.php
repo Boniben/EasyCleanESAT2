@@ -35,14 +35,14 @@ class SuppInter
     private ?Intervention $intervention = null;
 
     /**
-     * @var Collection<int, Actions>
+     * @var Collection<int, SuppInterActions>
      */
-    #[ORM\ManyToMany(targetEntity: Actions::class, inversedBy: 'suppInters')]
-    private Collection $actions;
+    #[ORM\OneToMany(targetEntity: SuppInterActions::class, mappedBy: 'suppInter', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $suppInterActions;
 
     public function __construct()
     {
-        $this->actions = new ArrayCollection();
+        $this->suppInterActions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -58,7 +58,6 @@ class SuppInter
     public function setOrdre(?int $ordre): static
     {
         $this->ordre = $ordre;
-
         return $this;
     }
 
@@ -70,7 +69,6 @@ class SuppInter
     public function setSupportClient(?SupportClient $supportClient): static
     {
         $this->supportClient = $supportClient;
-
         return $this;
     }
 
@@ -82,31 +80,67 @@ class SuppInter
     public function setIntervention(?Intervention $intervention): static
     {
         $this->intervention = $intervention;
-
         return $this;
     }
 
     /**
+     * @return Collection<int, SuppInterActions>
+     */
+    public function getSuppInterActions(): Collection
+    {
+        return $this->suppInterActions;
+    }
+
+    public function addSuppInterAction(SuppInterActions $sia): static
+    {
+        if (!$this->suppInterActions->contains($sia)) {
+            $this->suppInterActions->add($sia);
+            $sia->setSuppInter($this);
+        }
+        return $this;
+    }
+
+    public function removeSuppInterAction(SuppInterActions $sia): static
+    {
+        $this->suppInterActions->removeElement($sia);
+        return $this;
+    }
+
+    /**
+     * Retourne les Actions liées (via SuppInterActions), triées par ordre.
      * @return Collection<int, Actions>
      */
     public function getActions(): Collection
     {
-        return $this->actions;
+        $sorted = $this->suppInterActions->toArray();
+        usort($sorted, fn(SuppInterActions $a, SuppInterActions $b) => ($a->getOrdre() ?? 0) <=> ($b->getOrdre() ?? 0));
+        return new ArrayCollection(array_map(fn(SuppInterActions $sia) => $sia->getAction(), $sorted));
     }
 
-    public function addAction(Actions $action): static
+    public function addAction(Actions $action, ?int $ordre = null, ?string $frequence = null): static
     {
-        if (!$this->actions->contains($action)) {
-            $this->actions->add($action);
+        foreach ($this->suppInterActions as $sia) {
+            if ($sia->getAction() === $action) {
+                return $this;
+            }
         }
-
+        $sia = new SuppInterActions();
+        $sia->setSuppInter($this);
+        $sia->setAction($action);
+        $sia->setOrdre($ordre);
+        $sia->setFrequence($frequence);
+        $this->suppInterActions->add($sia);
         return $this;
     }
 
     public function removeAction(Actions $action): static
     {
-        $this->actions->removeElement($action);
-
+        foreach ($this->suppInterActions as $sia) {
+            if ($sia->getAction() === $action) {
+                $this->suppInterActions->removeElement($sia);
+                break;
+            }
+        }
         return $this;
     }
 }

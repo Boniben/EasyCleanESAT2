@@ -11,167 +11,278 @@
      data-supp-inter-moyen-dosage-url-value="{{ asset('PictoMoyenDosagePNG/') }}"
      data-supp-inter-temps-contact-url-value="{{ asset('PictoTempContactPNG/') }}">
 {{ form_start(form) }}
-    <div{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
-        {{ form_label(form.client) }}
-        {{ form_widget(form.client, {
-            'attr': {
-                'data-intervention-form-target': 'client',
-                'data-action': 'change->intervention-form#onClientChange'
-            }
-        }) }}
-        {{ form_errors(form.client) }}
-    </div>
 
-    <div{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
-        {{ form_label(form.site) }}
-        {{ form_widget(form.site, {
-            'attr': {
-                'data-intervention-form-target': 'site',
-                'data-action': 'change->intervention-form#onSiteChange'
-            }
-        }) }}
-        {{ form_errors(form.site) }}
-    </div>
+    {# ── Bloc Informations fiche ─────────────────────────────────────────────── #}
+    <div class="form-bloc">
+        <div class="form-bloc-title">Informations fiche</div>
+        <div class="form-bloc-body">
 
-    <div{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
-        {{ form_label(form.contrat) }}
-        {{ form_widget(form.contrat, {
-            'attr': {
-                'data-intervention-form-target': 'contrat'
-            }
-        }) }}
-        {{ form_errors(form.contrat) }}
-    </div>
-
-    <div{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
-        {{ form_label(form.zonesClient) }}
-        {{ form_widget(form.zonesClient, {
-            'attr': {
-                'data-intervention-form-target': 'zone',
-                'data-supp-inter-target': 'zone',
-                'data-action': 'change->supp-inter#onZoneChange'
-            }
-        }) }}
-        {{ form_errors(form.zonesClient) }}
-    </div>
-
-    {# Section supports de la zone #}
-    <div data-supp-inter-target="supportsSection" class="form-group supp-section" style="display:none">
-        <label class="supp-section-label">Supports de la zone</label>
-        <div data-supp-inter-target="supportsGrid" class="tile-grid supp-grid"></div>
-    </div>
-
-    {# Section actions #}
-    <div data-supp-inter-target="actionsSection" class="form-group supp-section" style="display:none">
-        <label class="supp-section-label">Actions</label>
-        <div class="action-search-wrapper">
-            <input type="text"
-                   data-supp-inter-target="actionSearch"
-                   data-action="input->supp-inter#onActionSearchInput blur->supp-inter#onActionSearchBlur focus->supp-inter#onActionSearchFocus click->supp-inter#onActionSearchFocus"
-                   placeholder="Rechercher une action..."
-                   class="action-search-input"
-                   autocomplete="off">
-            <div data-supp-inter-target="actionDropdown" class="action-dropdown" style="display:none"></div>
-        </div>
-        <div data-supp-inter-target="filterChips" class="action-filter-chips"></div>
-        <div data-supp-inter-target="actionsList" class="actions-list"></div>
-    </div>
-
-    {{ form_row(form.redacteur) }}
-    <div class="form-group">
-        {{ form_label(form.dateCreation) }}
-        {{ form_widget(form.dateCreation, {'attr': {'class': 'date-input'}}) }}
-        {{ form_errors(form.dateCreation) }}
-    </div>
-    {{ form_row(form.nbTravailleur) }}
-
-    <div class="form-group">
-        <label>Durée recommandé de l'intervention</label>
-        <div class="duree-container">
-            {{ form_widget(form.dureeHeure, {'attr': {'class': 'duree-input'}}) }}
-            <span class="duree-separator">:</span>
-            {{ form_widget(form.dureeMinute, {'attr': {'class': 'duree-input'}}) }}
-        </div>
-        {{ form_errors(form.dureeHeure) }}
-        {{ form_errors(form.dureeMinute) }}
-    </div>
-
-    <div class="form-group">
-        <label>Plages horaires de travail</label>
-        <table class="plage-table">
-            <thead>
-                <tr>
-                    <th colspan="2"></th>
-                    {% for jour in jours %}
-                        <th>{{ jour.nom }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td rowspan="2" class="plage-period">Matin</td>
-                    <td class="plage-label">Arrivé</td>
-                    {% for jour in jours %}
-                        {% set val = plagesMap[jour.id]['matin'] is defined ? plagesMap[jour.id]['matin'].heureDebut|date('H:i') : '' %}
-                        <td><input type="time" name="plage[{{ jour.id }}][matin][debut]" class="plage-input" min="00:00" max="13:00" value="{{ val }}"></td>
-                    {% endfor %}
-                </tr>
-                <tr>
-                    <td class="plage-label">Départ</td>
-                    {% for jour in jours %}
-                        {% set val = plagesMap[jour.id]['matin'] is defined ? plagesMap[jour.id]['matin'].heureFin|date('H:i') : '' %}
-                        <td><input type="time" name="plage[{{ jour.id }}][matin][fin]" class="plage-input" min="00:00" max="13:00" value="{{ val }}"></td>
-                    {% endfor %}
-                </tr>
-                <tr>
-                    <td rowspan="2" class="plage-period">Après-midi</td>
-                    <td class="plage-label">Arrivé</td>
-                    {% for jour in jours %}
-                        {% set val = plagesMap[jour.id]['apmidi'] is defined ? plagesMap[jour.id]['apmidi'].heureDebut|date('H:i') : '' %}
-                        <td><input type="time" name="plage[{{ jour.id }}][apmidi][debut]" class="plage-input" min="13:00" max="23:59" value="{{ val }}"></td>
-                    {% endfor %}
-                </tr>
-                <tr>
-                    <td class="plage-label">Départ</td>
-                    {% for jour in jours %}
-                        {% set val = plagesMap[jour.id]['apmidi'] is defined ? plagesMap[jour.id]['apmidi'].heureFin|date('H:i') : '' %}
-                        <td><input type="time" name="plage[{{ jour.id }}][apmidi][fin]" class="plage-input" min="13:00" max="23:59" value="{{ val }}"></td>
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="form-group">
-        <label>Éléments de sécurité</label>
-        {{ form_widget(form.elementSecurites, {'attr': {'class': 'tile-select-hidden', 'id': 'tile-select-elementSecurites', 'style': 'display:none!important'}}) }}
-        {{ form_errors(form.elementSecurites) }}
-        <div class="tile-grid" id="es-tile-grid">
-            {% for choice in form.elementSecurites.vars.choices %}
-                {% set isT21 = (choice.label == '0') %}
-                <div class="tile-item{% if choice.value in form.elementSecurites.vars.value or isT21 %} selected{% endif %}"
-                     data-tile-value="{{ choice.value }}"
-                     onclick="esTileToggle(this)"
-                     {% if isT21 %}data-auto-select="true"{% endif %}>
-                    {% if isT21 %}
-                        <img src="{{ asset('PictoNecessairePNG/T.21.png') }}" alt="T.21" class="tile-picto" onerror="this.style.display='none'">
-                        <span>T.21</span>
-                    {% else %}
-                        {% set pictoFile = choice.data.picto ? choice.data.picto : (choice.data.id ~ '.png') %}
-                        <img src="{{ asset('PictoElementSecuritePNG/' ~ pictoFile) }}" alt="{{ choice.label }}" class="tile-picto" onerror="this.style.display='none'">
-                        <span>{{ choice.label }}</span>
-                    {% endif %}
+            <div class="form-bloc-row"{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
+                {{ form_label(form.client) }}
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    {{ form_widget(form.client, {
+                        'attr': {
+                            'data-intervention-form-target': 'client',
+                            'data-action': 'change->intervention-form#onClientChange'
+                        }
+                    }) }}
+                    <img id="client-picto-preview" src="" alt=""
+                         style="width:80px;height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--color-border);background:var(--color-bg);padding:4px;display:none;box-shadow:var(--shadow-md);flex-shrink:0;">
                 </div>
-            {% endfor %}
+                {{ form_errors(form.client) }}
+            </div>
+
+            <div class="form-bloc-row"{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
+                {{ form_label(form.site) }}
+                {{ form_widget(form.site, {
+                    'attr': {
+                        'data-intervention-form-target': 'site',
+                        'data-action': 'change->intervention-form#onSiteChange'
+                    }
+                }) }}
+                {{ form_errors(form.site) }}
+            </div>
+
+            <div class="form-bloc-row"{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
+                {{ form_label(form.contrat) }}
+                {{ form_widget(form.contrat, {
+                    'attr': {
+                        'data-intervention-form-target': 'contrat'
+                    }
+                }) }}
+                {{ form_errors(form.contrat) }}
+            </div>
+
+            <div class="form-bloc-row"{% if is_edit is defined and is_edit %} style="display:none"{% endif %}>
+                {{ form_label(form.zonesClient) }}
+                {{ form_widget(form.zonesClient, {
+                    'attr': {
+                        'data-intervention-form-target': 'zone',
+                        'data-supp-inter-target': 'zone',
+                        'data-action': 'change->supp-inter#onZoneChange'
+                    }
+                }) }}
+                {{ form_errors(form.zonesClient) }}
+            </div>
+
+            <div class="form-bloc-row">
+                {{ form_label(form.redacteur) }}
+                {{ form_widget(form.redacteur) }}
+                {{ form_errors(form.redacteur) }}
+            </div>
+
+            <div class="form-bloc-row">
+                {{ form_label(form.dateCreation) }}
+                {{ form_widget(form.dateCreation, {'attr': {'class': 'date-input'}}) }}
+                {{ form_errors(form.dateCreation) }}
+            </div>
+
         </div>
     </div>
 
+    {# ── Bloc Supports de la zone ────────────────────────────────────────────── #}
+    <div data-supp-inter-target="supportsSection" class="form-bloc" style="display:none">
+        <div class="form-bloc-title">Supports de la zone</div>
+        <div class="form-bloc-body">
+            <div data-supp-inter-target="supportsGrid" class="tile-grid supp-grid"></div>
+        </div>
+    </div>
+
+    {# ── Bloc Actions ────────────────────────────────────────────────────────── #}
+    <div data-supp-inter-target="actionsSection" class="form-bloc" style="display:none">
+        <div class="form-bloc-title">Actions</div>
+        <div class="form-bloc-body">
+            <div class="action-search-wrapper">
+                <div class="action-search-row">
+                    <input type="text"
+                           data-supp-inter-target="actionSearch"
+                           data-action="keydown->supp-inter#onActionSearchKeydown"
+                           placeholder="Rechercher une action..."
+                           class="action-search-input"
+                           autocomplete="off">
+                    <button type="button"
+                            class="btn btn-primary action-search-btn"
+                            data-action="click->supp-inter#onActionSearch">Rechercher</button>
+                </div>
+                <div data-supp-inter-target="actionDropdown" class="action-dropdown" style="display:none"></div>
+            </div>
+            <div data-supp-inter-target="filterChips" class="action-filter-chips"></div>
+            <div data-supp-inter-target="actionsList" class="actions-list"></div>
+        </div>
+    </div>
+
+    {# ── Bloc Planning ───────────────────────────────────────────────────────── #}
+    <div class="form-bloc">
+        <div class="form-bloc-title">Planning</div>
+        <div class="form-bloc-body">
+
+            <div class="form-bloc-row">
+                {{ form_label(form.nbTravailleur) }}
+                {{ form_widget(form.nbTravailleur) }}
+                {{ form_errors(form.nbTravailleur) }}
+            </div>
+
+            <div class="form-bloc-row">
+                <label>Durée recommandée de l'intervention</label>
+                <div class="duree-container">
+                    {{ form_widget(form.dureeHeure, {'attr': {'class': 'duree-input'}}) }}
+                    <span class="duree-separator">:</span>
+                    {{ form_widget(form.dureeMinute, {'attr': {'class': 'duree-input'}}) }}
+                </div>
+                {{ form_errors(form.dureeHeure) }}
+                {{ form_errors(form.dureeMinute) }}
+            </div>
+
+            <div class="form-bloc-row">
+                <label>Plages horaires de travail</label>
+                <table class="plage-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2"></th>
+                            {% for jour in jours %}
+                                <th>{{ jour.nom }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2" class="plage-period">Matin</td>
+                            <td class="plage-label">Arrivé</td>
+                            {% for jour in jours %}
+                                {% set val = plagesMap[jour.id]['matin'] is defined ? plagesMap[jour.id]['matin'].heureDebut|date('H:i') : '' %}
+                                <td><input type="time" name="plage[{{ jour.id }}][matin][debut]" class="plage-input" min="05:00" max="12:00" value="{{ val }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="plage-label">Départ</td>
+                            {% for jour in jours %}
+                                {% set val = plagesMap[jour.id]['matin'] is defined ? plagesMap[jour.id]['matin'].heureFin|date('H:i') : '' %}
+                                <td><input type="time" name="plage[{{ jour.id }}][matin][fin]" class="plage-input" min="05:00" max="12:00" value="{{ val }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td rowspan="2" class="plage-period">Après-midi</td>
+                            <td class="plage-label">Arrivé</td>
+                            {% for jour in jours %}
+                                {% set val = plagesMap[jour.id]['apmidi'] is defined ? plagesMap[jour.id]['apmidi'].heureDebut|date('H:i') : '' %}
+                                <td><input type="time" name="plage[{{ jour.id }}][apmidi][debut]" class="plage-input" min="12:00" max="21:00" value="{{ val }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="plage-label">Départ</td>
+                            {% for jour in jours %}
+                                {% set val = plagesMap[jour.id]['apmidi'] is defined ? plagesMap[jour.id]['apmidi'].heureFin|date('H:i') : '' %}
+                                <td><input type="time" name="plage[{{ jour.id }}][apmidi][fin]" class="plage-input" min="12:00" max="21:00" value="{{ val }}"></td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    {# ── Bloc Éléments de sécurité ───────────────────────────────────────────── #}
+    <div class="form-bloc">
+        <div class="form-bloc-title">Éléments de sécurité</div>
+        <div class="form-bloc-body">
+            {{ form_widget(form.elementSecurites, {'attr': {'class': 'tile-select-hidden', 'id': 'tile-select-elementSecurites', 'style': 'display:none!important'}}) }}
+            {{ form_errors(form.elementSecurites) }}
+            <div class="tile-grid" id="es-tile-grid">
+                {% for choice in form.elementSecurites.vars.choices %}
+                    {% set isT21 = (choice.label == '0') %}
+                    <div class="tile-item{% if choice.value in form.elementSecurites.vars.value or isT21 %} selected{% endif %}"
+                         data-tile-value="{{ choice.value }}"
+                         onclick="esTileToggle(this)"
+                         {% if isT21 %}data-auto-select="true"{% endif %}>
+                        {% if isT21 %}
+                            <img src="{{ asset('PictoNecessairePNG/T.21.png') }}" alt="T.21" class="tile-picto" onerror="this.style.display='none'">
+                            <span>T.21</span>
+                        {% else %}
+                            {% set pictoFile = choice.data.picto ? choice.data.picto : (choice.data.id ~ '.png') %}
+                            <img src="{{ asset('PictoElementSecuritePNG/' ~ pictoFile) }}" alt="{{ choice.label }}" class="tile-picto" onerror="this.style.display='none'">
+                            <span>{{ choice.label }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Bloc Points de vigilance ────────────────────────────────────────────── #}
+    <div class="form-bloc">
+        <div class="form-bloc-title">Points de vigilance</div>
+        <div class="form-bloc-body">
+
+            <div class="form-bloc-row">
+                <div class="vigil-select-row">
+                    <select id="vigil-dropdown" class="vigil-dropdown">
+                        <option value="">— Sélectionnez une vigilance à ajouter —</option>
+                        {% for v in vigilances %}
+                            <option value="{{ v.id }}"
+                                    data-definition="{{ v.definition }}"
+                                    data-picto="{{ v.picto }}">
+                                {{ v.definition }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-primary vigil-add-btn" onclick="vigilAdd()">Ajouter</button>
+                </div>
+                <div class="vigil-counter" id="vigil-counter" style="display:none">
+                    <span id="vigil-count">0</span> / 5 vigilance(s) sélectionnée(s)
+                </div>
+            </div>
+
+            <div id="vigil-list" style="display:none">
+                <div class="vigil-list-header">
+                    <span>Picto</span>
+                    <span>Définition</span>
+                    <span>Détail</span>
+                    <span></span>
+                </div>
+                <div id="vigil-rows"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <input type="hidden" name="vigilance_data" id="vigil-hidden">
     <input type="hidden" name="supp_inter_data" data-supp-inter-target="hiddenData">
 
-    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+    <button class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
 {{ form_end(form) }}
 
 <style>
+/* ── Blocs formulaire ──────────────────────────────────────────────────────── */
+.form-bloc {
+    background: #fff;
+    border: 1px solid #d0d4db;
+    border-radius: 10px;
+    margin-bottom: 1.4rem;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.form-bloc-title {
+    background: #3d5a80;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+}
+.form-bloc-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.form-bloc-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .duree-container { display: flex; align-items: center; gap: 10px; }
 .duree-input { width: 80px; padding: 8px; font-size: 1.2em; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
 .duree-separator { font-size: 1.5em; font-weight: bold; color: #333; }
@@ -256,13 +367,6 @@
 }
 
 /* Supp-inter section styles */
-.supp-section { margin-bottom: 1.2rem; }
-.supp-section-label {
-    display: block;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-    color: #1e2028;
-}
 .supp-grid {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
 }
@@ -294,11 +398,16 @@
 /* Actions section styles */
 .action-search-wrapper {
     position: relative;
-    max-width: 380px;
+    max-width: 480px;
     margin-bottom: 0.8rem;
 }
+.action-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
 .action-search-input {
-    width: 100%;
+    flex: 1;
     padding: 7px 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -308,6 +417,11 @@
 .action-search-input:focus {
     outline: none;
     border-color: #3d5a80;
+}
+.action-search-btn {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    font-size: 0.92rem;
 }
 .action-dropdown {
     position: absolute;
@@ -359,6 +473,42 @@
     overflow: hidden;
     width: 180px;
     flex-shrink: 0;
+    cursor: grab;
+    transition: box-shadow 0.15s, opacity 0.15s;
+}
+.action-row:active { cursor: grabbing; }
+.action-row.action-dragging { opacity: 0.45; }
+.action-row.action-drag-over {
+    border-color: #3d5a80;
+    border-style: dashed;
+    box-shadow: 0 0 0 2px #3d5a8044;
+}
+.action-drag-handle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: #e4e9f0;
+    border-bottom: 1px solid #d0d4db;
+    user-select: none;
+}
+.action-order-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #3d5a80;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.drag-dots {
+    color: #9ca3af;
+    font-size: 1rem;
+    line-height: 1;
 }
 .action-row-header {
     display: flex;
@@ -400,6 +550,28 @@
     align-items: center;
     gap: 4px;
     cursor: pointer;
+}
+.action-frequence-wrap {
+    padding: 6px 8px;
+    border-top: 1px solid #d0d4db;
+}
+.action-frequence-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 7px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: #444;
+    background: #fff;
+}
+.action-frequence-input:focus {
+    outline: none;
+    border-color: #3d5a80;
+}
+.action-frequence-input::placeholder {
+    color: #aaa;
+    font-style: italic;
 }
 /* Carte picto action */
 .action-picto-card {
@@ -495,9 +667,238 @@
 .filter-list-item.active:hover {
     background: #2d4a70;
 }
+
+/* ── Champs vides : teinte pastel orange ──────────────────────────────────── */
+input:placeholder-shown:not([type="hidden"]):not([type="submit"]),
+textarea:placeholder-shown {
+    background-color: #fff4ec !important;
+    border-color: #f0a07a !important;
+}
+input[type="time"].field-empty,
+input[type="number"].field-empty,
+select.field-empty {
+    background-color: #fff4ec !important;
+    border-color: #f0a07a !important;
+}
+
+/* ── Points de vigilance ───────────────────────────────────────────────────── */
+.vigil-select-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.vigil-dropdown {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: #fff;
+    cursor: pointer;
+}
+.vigil-dropdown:focus {
+    outline: none;
+    border-color: #3d5a80;
+}
+.vigil-add-btn {
+    flex-shrink: 0;
+    padding: 9px 18px;
+}
+.vigil-counter {
+    font-size: 0.82rem;
+    color: #555;
+    margin-top: 4px;
+}
+.vigil-list-header {
+    display: grid;
+    grid-template-columns: 60px 1fr 220px 32px;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 10px;
+    background: #eef1f5;
+    border: 1px solid #d0d4db;
+    border-radius: 6px 6px 0 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.vigil-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 220px 32px;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid #d0d4db;
+    border-top: none;
+    background: #fff;
+}
+.vigil-row:last-child {
+    border-radius: 0 0 6px 6px;
+}
+.vigil-picto-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.vigil-picto {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+.vigil-picto-placeholder {
+    width: 48px;
+    height: 48px;
+    background: #e4e9f0;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #9ca3af;
+}
+.vigil-definition {
+    font-size: 0.88rem;
+    color: #1e2028;
+    line-height: 1.4;
+}
+.vigil-detail-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    resize: vertical;
+    min-height: 52px;
+    max-height: 100px;
+    font-family: inherit;
+}
+.vigil-detail-input:focus {
+    outline: none;
+    border-color: #3d5a80;
+}
+.vigil-remove-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+}
+.vigil-remove-btn:hover { color: #c0392b; }
 </style>
 
 <script>
+// ── Vigilances ──────────────────────────────────────────────────────────────
+var _vigilSelected = [];  // [{id, definition, picto, detail}]
+var _vigilPictoBase = '{{ asset("PictoVigilancePNG/") }}';
+
+// Pré-remplissage en mode édition
+var _vigilInitial = {{ vigilanceDataJson|default('[]')|raw }};
+document.addEventListener('DOMContentLoaded', function() {
+    _vigilInitial.forEach(function(v) {
+        _vigilSelected.push({ id: v.id, definition: v.definition, picto: v.picto || '', detail: v.detail || '' });
+    });
+    vigilRender();
+});
+
+function vigilAdd() {
+    var sel = document.getElementById('vigil-dropdown');
+    var id = parseInt(sel.value);
+    if (!id) return;
+    if (_vigilSelected.length >= 5) { alert('Maximum 5 vigilances par intervention.'); return; }
+    if (_vigilSelected.some(function(v) { return v.id === id; })) return;
+    var opt = sel.options[sel.selectedIndex];
+    _vigilSelected.push({
+        id: id,
+        definition: opt.dataset.definition,
+        picto: opt.dataset.picto || '',
+        detail: '',
+    });
+    sel.value = '';
+    vigilRender();
+}
+
+function vigilRemove(id) {
+    _vigilSelected = _vigilSelected.filter(function(v) { return v.id !== id; });
+    vigilRender();
+}
+
+function vigilRender() {
+    var rows = document.getElementById('vigil-rows');
+    var list = document.getElementById('vigil-list');
+    var counter = document.getElementById('vigil-counter');
+    var countEl = document.getElementById('vigil-count');
+    rows.innerHTML = '';
+
+    if (_vigilSelected.length === 0) {
+        list.style.display = 'none';
+        counter.style.display = 'none';
+        vigilSerialize();
+        return;
+    }
+
+    list.style.display = '';
+    counter.style.display = '';
+    countEl.textContent = _vigilSelected.length;
+
+    _vigilSelected.forEach(function(v) {
+        var row = document.createElement('div');
+        row.className = 'vigil-row';
+
+        // Picto — utilise picto si renseigné, sinon {id}.png
+        var pictoCell = document.createElement('div');
+        pictoCell.className = 'vigil-picto-cell';
+        var img = document.createElement('img');
+        img.src = _vigilPictoBase + (v.picto || v.id + '.png');
+        img.className = 'vigil-picto';
+        img.onerror = function() { pictoCell.innerHTML = '<div class="vigil-picto-placeholder">⚠</div>'; };
+        pictoCell.appendChild(img);
+        row.appendChild(pictoCell);
+
+        // Définition
+        var def = document.createElement('div');
+        def.className = 'vigil-definition';
+        def.textContent = v.definition;
+        row.appendChild(def);
+
+        // Détail
+        var textarea = document.createElement('textarea');
+        textarea.className = 'vigil-detail-input';
+        textarea.placeholder = 'Informations complémentaires…';
+        textarea.value = v.detail;
+        textarea.addEventListener('input', function() {
+            v.detail = textarea.value;
+            vigilSerialize();
+        });
+        row.appendChild(textarea);
+
+        // Supprimer
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'vigil-remove-btn';
+        btn.title = 'Retirer';
+        btn.textContent = '✕';
+        btn.addEventListener('click', function() { vigilRemove(v.id); });
+        row.appendChild(btn);
+
+        rows.appendChild(row);
+    });
+
+    vigilSerialize();
+}
+
+function vigilSerialize() {
+    var hidden = document.getElementById('vigil-hidden');
+    if (hidden) hidden.value = JSON.stringify(_vigilSelected.map(function(v) {
+        return { id: v.id, detail: v.detail };
+    }));
+}
+
 function esTileToggle(tile) {
     var isNow = !tile.classList.contains('selected');
     tile.classList.toggle('selected', isNow);
@@ -518,5 +919,36 @@ document.addEventListener('DOMContentLoaded', function() {
             if (opt.value === val) opt.selected = true;
         });
     });
+});
+
+// ── Teinte champs vides ────────────────────────────────────────────────────
+function checkFieldEmpty(el) {
+    if (!el || el.type === 'hidden') return;
+    el.classList.toggle('field-empty', el.value === '');
+}
+
+function initFieldChecks() {
+    var fields = document.querySelectorAll('select, input[type="time"], input[type="number"]');
+    fields.forEach(function(el) {
+        if (!el._emptyListenerAdded) {
+            el.addEventListener('change', function() { checkFieldEmpty(el); });
+            el.addEventListener('input',  function() { checkFieldEmpty(el); });
+            el._emptyListenerAdded = true;
+        }
+        checkFieldEmpty(el);
+    });
+}
+
+// Lancement initial + après Stimulus (qui modifie le DOM)
+document.addEventListener('DOMContentLoaded', function() {
+    initFieldChecks();
+    // MutationObserver : re-vérifie dès que Stimulus peuple/réinitialise un select
+    var observer = new MutationObserver(function() {
+        initFieldChecks();
+    });
+    var form = document.querySelector('form');
+    if (form) {
+        observer.observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'value'] });
+    }
 });
 </script>

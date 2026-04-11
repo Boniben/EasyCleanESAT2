@@ -107,9 +107,10 @@ class ApiController extends AbstractController
 
         $data = array_map(function ($support) {
             return [
-                'id' => $support->getId(),
-                'nom' => $support->getTypeSupport()->getNom(),
+                'id'              => $support->getId(),
+                'nom'             => $support->getTypeSupport()->getNom(),
                 'type_support_id' => $support->getTypeSupport()->getId(),
+                'picto'           => $support->getTypeSupport()->getPicto(),
             ];
         }, $supports);
 
