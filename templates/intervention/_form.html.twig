@@ -80,37 +80,6 @@
         </div>
     </div>
 
-    {# ── Bloc Supports de la zone ────────────────────────────────────────────── #}
-    <div data-supp-inter-target="supportsSection" class="form-bloc" style="display:none">
-        <div class="form-bloc-title">Supports de la zone</div>
-        <div class="form-bloc-body">
-            <div data-supp-inter-target="supportsGrid" class="tile-grid supp-grid"></div>
-        </div>
-    </div>
-
-    {# ── Bloc Actions ────────────────────────────────────────────────────────── #}
-    <div data-supp-inter-target="actionsSection" class="form-bloc" style="display:none">
-        <div class="form-bloc-title">Actions</div>
-        <div class="form-bloc-body">
-            <div class="action-search-wrapper">
-                <div class="action-search-row">
-                    <input type="text"
-                           data-supp-inter-target="actionSearch"
-                           data-action="keydown->supp-inter#onActionSearchKeydown"
-                           placeholder="Rechercher une action..."
-                           class="action-search-input"
-                           autocomplete="off">
-                    <button type="button"
-                            class="btn btn-primary action-search-btn"
-                            data-action="click->supp-inter#onActionSearch">Rechercher</button>
-                </div>
-                <div data-supp-inter-target="actionDropdown" class="action-dropdown" style="display:none"></div>
-            </div>
-            <div data-supp-inter-target="filterChips" class="action-filter-chips"></div>
-            <div data-supp-inter-target="actionsList" class="actions-list"></div>
-        </div>
-    </div>
-
     {# ── Bloc Planning ───────────────────────────────────────────────────────── #}
     <div class="form-bloc">
         <div class="form-bloc-title">Planning</div>
@@ -182,29 +151,67 @@
         </div>
     </div>
 
+    {# ── Bloc Supports de la zone ────────────────────────────────────────────── #}
+    <div data-supp-inter-target="supportsSection" class="form-bloc" style="display:none">
+        <div class="form-bloc-title">Supports de la zone</div>
+        <div class="form-bloc-body">
+            <div data-supp-inter-target="supportsGrid" class="tile-grid supp-grid"></div>
+        </div>
+    </div>
+
+    {# ── Bloc Actions ────────────────────────────────────────────────────────── #}
+    <div data-supp-inter-target="actionsSection" class="form-bloc" style="display:none">
+        <div class="form-bloc-title">Actions</div>
+        <div class="form-bloc-body">
+            <div class="action-search-wrapper">
+                <div class="action-search-row">
+                    <input type="text"
+                           data-supp-inter-target="actionSearch"
+                           data-action="keydown->supp-inter#onActionSearchKeydown"
+                           placeholder="Rechercher une action..."
+                           class="action-search-input"
+                           autocomplete="off">
+                    <button type="button"
+                            class="btn btn-primary action-search-btn"
+                            data-action="click->supp-inter#onActionSearch">Rechercher</button>
+                </div>
+                <div data-supp-inter-target="actionDropdown" class="action-dropdown" style="display:none"></div>
+            </div>
+            <div data-supp-inter-target="filterChips" class="action-filter-chips"></div>
+            <div data-supp-inter-target="actionsList" class="actions-list"></div>
+        </div>
+    </div>
+
     {# ── Bloc Éléments de sécurité ───────────────────────────────────────────── #}
     <div class="form-bloc">
         <div class="form-bloc-title">Éléments de sécurité</div>
         <div class="form-bloc-body">
-            {{ form_widget(form.elementSecurites, {'attr': {'class': 'tile-select-hidden', 'id': 'tile-select-elementSecurites', 'style': 'display:none!important'}}) }}
-            {{ form_errors(form.elementSecurites) }}
-            <div class="tile-grid" id="es-tile-grid">
-                {% for choice in form.elementSecurites.vars.choices %}
-                    {% set isT21 = (choice.label == '0') %}
-                    <div class="tile-item{% if choice.value in form.elementSecurites.vars.value or isT21 %} selected{% endif %}"
-                         data-tile-value="{{ choice.value }}"
-                         onclick="esTileToggle(this)"
-                         {% if isT21 %}data-auto-select="true"{% endif %}>
-                        {% if isT21 %}
-                            <img src="{{ asset('PictoNecessairePNG/T.21.png') }}" alt="T.21" class="tile-picto" onerror="this.style.display='none'">
-                            <span>T.21</span>
-                        {% else %}
-                            {% set pictoFile = choice.data.picto ? choice.data.picto : (choice.data.id ~ '.png') %}
-                            <img src="{{ asset('PictoElementSecuritePNG/' ~ pictoFile) }}" alt="{{ choice.label }}" class="tile-picto" onerror="this.style.display='none'">
-                            <span>{{ choice.label }}</span>
-                        {% endif %}
-                    </div>
-                {% endfor %}
+            <input type="hidden" name="element_securite_data" id="es-hidden">
+
+            {# Sélecteur #}
+            <div class="form-bloc-row">
+                <div class="vigil-select-row">
+                    <select id="es-dropdown" class="vigil-dropdown">
+                        <option value="">— Sélectionner un élément de sécurité —</option>
+                        {% for el in elementSecurites %}
+                            {% set labelNom = esNomMap is defined and esNomMap[el.nom] is defined ? esNomMap[el.nom] : el.nom %}
+                            <option value="{{ el.id }}"
+                                    data-nom="{{ labelNom }}"
+                                    data-picto="{{ el.picto ? el.picto : (el.id ~ '.png') }}">
+                                {{ labelNom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-primary vigil-add-btn" onclick="esAdd()">Ajouter</button>
+                </div>
+                <div id="es-counter" style="display:none; font-size:12px; color:#666; margin-top:4px;">
+                    <span id="es-count">0</span> / 6 élément(s)
+                </div>
+            </div>
+
+            {# Liste des éléments sélectionnés #}
+            <div id="es-list" style="display:none; margin-top:8px;">
+                <div id="es-rows" style="display:flex; flex-wrap:wrap; gap:10px; padding:8px 0;"></div>
             </div>
         </div>
     </div>
@@ -444,6 +451,32 @@
     flex-wrap: wrap;
     gap: 6px;
     padding: 8px;
+    padding-top: 32px;
+}
+.action-dropdown-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: #dc3545;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 110;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: background 0.15s, transform 0.1s;
+}
+.action-dropdown-close:hover {
+    background: #b02a37;
+    transform: scale(1.08);
 }
 .action-dropdown-picto-item {
     cursor: pointer;
@@ -456,7 +489,7 @@
     background: #dce4ed;
 }
 .action-dropdown-empty {
-    padding: 8px 12px;
+    padding: 32px 12px 12px;
     color: #888;
     font-size: 0.85rem;
 }
@@ -546,10 +579,25 @@
     margin-bottom: 2px;
 }
 .action-support-check {
-    display: flex;
+    display: flex !important;
     align-items: center;
-    gap: 4px;
+    justify-content: flex-start;
+    gap: 6px;
     cursor: pointer;
+    margin-bottom: 0;
+    text-align: left;
+    font-weight: 400;
+}
+.action-support-check input[type="checkbox"] {
+    width: auto !important;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+}
+.action-support-check span {
+    flex: 1;
+    text-align: left;
+    line-height: 1.2;
 }
 .action-frequence-wrap {
     padding: 6px 8px;
@@ -573,18 +621,24 @@
     color: #aaa;
     font-style: italic;
 }
-/* Carte picto action */
+/* Carte picto action — taille normalisée */
 .action-picto-card {
     border: solid 1px #000;
     background: #fff;
     border-radius: 4px;
     overflow: hidden;
     flex-shrink: 0;
+    width: 142px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 .action-picto-top {
     border-bottom: solid 1px #000;
     padding: 6px 8px;
     text-align: center;
+    min-height: 92px;
+    box-sizing: border-box;
 }
 .action-picto-tache-nom {
     font-weight: bold;
@@ -601,18 +655,46 @@
 .action-picto-bottom {
     display: flex;
     padding: 4px;
-    align-items: center;
+    gap: 4px;
+    align-items: stretch;
+    min-height: 78px;
+    box-sizing: border-box;
 }
 .action-picto-grid {
     display: grid;
-    grid-template-columns: repeat(2, 32px);
+    grid-template-columns: repeat(2, 34px);
+    grid-template-rows: repeat(2, 34px);
     gap: 2px;
+    flex-shrink: 0;
 }
-.action-picto-nec-img {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
+.action-picto-nec-cell {
+    width: 34px;
+    height: 34px;
     border: 1px solid #ccc;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.action-picto-nec-cell img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.action-picto-meo {
+    width: 56px;
+    flex-shrink: 0;
+    border: 1px solid #4b5563;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.action-picto-meo-empty {
+    width: 56px;
+    flex-shrink: 0;
+    border: 1px dashed #ccc;
+    border-radius: 3px;
+    background: #fafafa;
 }
 /* Filtres nécessaires */
 .action-filter-chips {
@@ -797,14 +879,17 @@ select.field-empty {
 var _vigilSelected = [];  // [{id, definition, picto, detail}]
 var _vigilPictoBase = '{{ asset("PictoVigilancePNG/") }}';
 
-// Pré-remplissage en mode édition
+// Pré-remplissage en mode édition — initialisation directe sans DOMContentLoaded
+// (le script tourne après le DOM, donc l'event ne se déclenche pas)
 var _vigilInitial = {{ vigilanceDataJson|default('[]')|raw }};
-document.addEventListener('DOMContentLoaded', function() {
-    _vigilInitial.forEach(function(v) {
-        _vigilSelected.push({ id: v.id, definition: v.definition, picto: v.picto || '', detail: v.detail || '' });
-    });
-    vigilRender();
+_vigilInitial.forEach(function(v) {
+    _vigilSelected.push({ id: v.id, definition: v.definition, picto: v.picto || '', detail: v.detail || '' });
 });
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', vigilRender);
+} else {
+    vigilRender();
+}
 
 function vigilAdd() {
     var sel = document.getElementById('vigil-dropdown');
@@ -892,6 +977,94 @@ function vigilRender() {
     vigilSerialize();
 }
 
+// ── Éléments de sécurité ──────────────────────────────────────────────────
+var _esSelected = [];
+var _esPictoBase = '{{ asset("PictoElementSecuritePNG/") }}';
+var _esInitial = {{ elementSecuriteJson|default('[]')|raw }};
+
+// Initialisation directe — pas de DOMContentLoaded pour éviter les problèmes de timing
+_esInitial.forEach(function(e) {
+    _esSelected.push({ id: e.id, nom: e.nom, picto: e.picto });
+});
+// Render après chargement DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', esRender);
+} else {
+    esRender();
+}
+
+function esAdd() {
+    if (_esSelected.length >= 6) { alert('Maximum 6 éléments de sécurité par intervention.'); return; }
+    var sel = document.getElementById('es-dropdown');
+    var id = parseInt(sel.value);
+    if (!id) return;
+    if (_esSelected.some(function(e) { return e.id === id; })) return;
+    var opt = sel.options[sel.selectedIndex];
+    _esSelected.push({
+        id: id,
+        nom: opt.getAttribute('data-nom'),
+        picto: opt.getAttribute('data-picto')
+    });
+    sel.value = '';
+    esRender();
+}
+
+function esRemove(id) {
+    _esSelected = _esSelected.filter(function(e) { return e.id !== id; });
+    esRender();
+}
+
+function esRender() {
+    var rows = document.getElementById('es-rows');
+    var list = document.getElementById('es-list');
+    var counter = document.getElementById('es-counter');
+    var countEl = document.getElementById('es-count');
+    rows.innerHTML = '';
+
+    if (_esSelected.length === 0) {
+        list.style.display = 'none';
+        counter.style.display = 'none';
+        esSerialize();
+        return;
+    }
+
+    list.style.display = '';
+    counter.style.display = '';
+    countEl.textContent = _esSelected.length;
+    _esSelected.forEach(function(e) {
+        var item = document.createElement('div');
+        item.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;border:1px solid #ddd;border-radius:6px;background:#f9f9f9;min-width:70px;max-width:80px;text-align:center;position:relative;';
+
+        var img = document.createElement('img');
+        img.src = _esPictoBase + e.picto;
+        img.style.cssText = 'max-height:48px;max-width:48px;object-fit:contain;';
+        img.onerror = function() { img.style.display = 'none'; };
+        item.appendChild(img);
+
+        var label = document.createElement('span');
+        label.textContent = e.nom;
+        label.style.cssText = 'font-size:8px;font-weight:600;color:#333;line-height:1.2;word-break:break-word;';
+        item.appendChild(label);
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = '✕';
+        btn.style.cssText = 'position:absolute;top:2px;right:2px;background:none;border:none;cursor:pointer;font-size:10px;color:#999;padding:0;line-height:1;';
+        btn.addEventListener('click', function() { esRemove(e.id); });
+        item.appendChild(btn);
+
+        rows.appendChild(item);
+    });
+    esSerialize();
+}
+
+function esSerialize() {
+    var hidden = document.getElementById('es-hidden');
+    if (hidden) hidden.value = JSON.stringify(_esSelected.map(function(e) {
+        return { id: e.id };
+    }));
+}
+
 function vigilSerialize() {
     var hidden = document.getElementById('vigil-hidden');
     if (hidden) hidden.value = JSON.stringify(_vigilSelected.map(function(v) {
@@ -899,27 +1072,6 @@ function vigilSerialize() {
     }));
 }
 
-function esTileToggle(tile) {
-    var isNow = !tile.classList.contains('selected');
-    tile.classList.toggle('selected', isNow);
-    var select = document.getElementById('tile-select-elementSecurites');
-    if (!select) return;
-    var val = tile.getAttribute('data-tile-value');
-    Array.from(select.options).forEach(function(opt) {
-        if (opt.value === val) opt.selected = isNow;
-    });
-}
-document.addEventListener('DOMContentLoaded', function() {
-    var autoTiles = document.querySelectorAll('[data-auto-select="true"]');
-    var select = document.getElementById('tile-select-elementSecurites');
-    if (!select) return;
-    autoTiles.forEach(function(tile) {
-        var val = tile.getAttribute('data-tile-value');
-        Array.from(select.options).forEach(function(opt) {
-            if (opt.value === val) opt.selected = true;
-        });
-    });
-});
 
 // ── Teinte champs vides ────────────────────────────────────────────────────
 function checkFieldEmpty(el) {

@@ -1,11 +1,12 @@
-﻿{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Creer ElementSecurite{% endblock %}
+{% block title %}Nouvel élément de sécurité{% endblock %}
 
 {% block body %}
-    <h1>Creer ElementSecurite</h1>
+    <div class="page-header">
+        <h1>🦺 Nouvel élément de sécurité</h1>
+        <a href="{{ path('app_element_securite_index') }}" class="btn btn-outline">← Retour à la liste</a>
+    </div>
 
     {{ include('element_securite/_form.html.twig') }}
-
-    <a href="{{ path('app_element_securite_index') }}">Retour a la liste</a>
 {% endblock %}

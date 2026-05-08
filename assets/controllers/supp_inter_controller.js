@@ -176,7 +176,7 @@ export default class extends Controller {
         if (selected && position !== null) {
             const badge = document.createElement('span');
             badge.className = 'supp-position-badge';
-            badge.textContent = 'Pos. ' + position;
+            badge.textContent = position;
             card.appendChild(badge);
 
             card.setAttribute('draggable', 'true');
@@ -481,6 +481,15 @@ export default class extends Controller {
         const dropdown = this.actionDropdownTarget;
         dropdown.innerHTML = '';
 
+        // Bouton de fermeture (croix rouge en haut à droite)
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'action-dropdown-close';
+        closeBtn.title = 'Fermer';
+        closeBtn.textContent = '✕';
+        closeBtn.addEventListener('click', () => this.hideDropdown());
+        dropdown.appendChild(closeBtn);
+
         if (actions.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'action-dropdown-empty';
@@ -618,7 +627,9 @@ export default class extends Controller {
                 });
 
                 label.appendChild(cb);
-                label.appendChild(document.createTextNode(' ' + sel.nom + ' (pos.' + sel.orderPosition + ')'));
+                const txt = document.createElement('span');
+                txt.textContent = sel.nom;
+                label.appendChild(txt);
                 checksDiv.appendChild(label);
             });
 
@@ -728,24 +739,44 @@ export default class extends Controller {
         }
         card.appendChild(top);
 
-        // Section basse : grille nécessaires + carte MEO
+        // Section basse : 4 slots fixes (matériel/réutilisable/accessoire/consommable) + carte MEO
         const bottom = document.createElement('div');
         bottom.className = 'action-picto-bottom';
 
+        // Catégoriser les nécessaires par type_id (1=matériel, 2=réutilisable, 3=accessoire, 6=consommable)
+        const slots = { 1: null, 2: null, 3: null, 6: null };
+        (action.necessaires || []).forEach(nec => {
+            if (slots.hasOwnProperty(nec.type_id) && slots[nec.type_id] === null) {
+                slots[nec.type_id] = nec;
+            }
+        });
+
         const grid = document.createElement('div');
         grid.className = 'action-picto-grid';
-        (action.necessaires || []).forEach(nec => {
-            const filename = nec.type_nom === 'consommable' ? '_' + nec.code : nec.code;
-            const img = document.createElement('img');
-            img.src = this.pictoUrlValue + filename + '.png';
-            img.onerror = () => { img.style.display = 'none'; };
-            img.className = 'action-picto-nec-img';
-            grid.appendChild(img);
+        [1, 2, 3, 6].forEach(typeId => {
+            const cell = document.createElement('div');
+            cell.className = 'action-picto-nec-cell';
+            const nec = slots[typeId];
+            if (nec) {
+                const filename = typeId === 6 ? '_' + nec.code : nec.code;
+                const img = document.createElement('img');
+                img.src = this.pictoUrlValue + filename + '.png';
+                img.onerror = () => { img.style.display = 'none'; };
+                img.alt = nec.nom || '';
+                cell.appendChild(img);
+            }
+            grid.appendChild(cell);
         });
         bottom.appendChild(grid);
 
-        if (action.meo && action.meo.produit_code && action.meo.produit_code !== 'P.00') {
+        // Carte MEO toujours présente (vide si pas de produit réel)
+        const hasRealMeo = action.meo && action.meo.produit_code && action.meo.produit_code !== 'P.00';
+        if (hasRealMeo) {
             bottom.appendChild(this._buildMeoCard(action.meo));
+        } else {
+            const emptyMeo = document.createElement('div');
+            emptyMeo.className = 'action-picto-meo-empty';
+            bottom.appendChild(emptyMeo);
         }
 
         card.appendChild(bottom);
@@ -766,36 +797,37 @@ export default class extends Controller {
         }
 
         const div = document.createElement('div');
-        div.style.cssText = 'margin-left:6px;width:70px;border:1px solid #4b5563;border-radius:4px;overflow:hidden;background:#fff;flex-shrink:0;';
+        div.className = 'action-picto-meo';
+        div.style.background = '#fff';
 
         const contenantImg = meo.contenant_id
-            ? `<img src="${this.contenantUrlValue}${meo.contenant_id}.png" onerror="this.style.display='none'" style="max-width:20px;max-height:20px;">`
+            ? `<img src="${this.contenantUrlValue}${meo.contenant_id}.png" onerror="this.style.display='none'" style="max-width:16px;max-height:16px;">`
             : '';
         const moyenImg = meo.moyen_dosage_id
-            ? `<img src="${this.moyenDosageUrlValue}${meo.moyen_dosage_id}.png" onerror="this.style.display='none'" style="max-width:24px;max-height:24px;">`
+            ? `<img src="${this.moyenDosageUrlValue}${meo.moyen_dosage_id}.png" onerror="this.style.display='none'" style="max-width:20px;max-height:20px;">`
             : '';
         const tcImg = meo.temps_contact_id
-            ? `<img src="${this.tempsContactUrlValue}${meo.temps_contact_id}.png" onerror="this.style.display='none'" style="max-width:19px;max-height:19px;">`
+            ? `<img src="${this.tempsContactUrlValue}${meo.temps_contact_id}.png" onerror="this.style.display='none'" style="max-width:16px;max-height:16px;">`
             : '';
 
         div.innerHTML = `
             <div style="display:flex;">
-                <div style="width:50%;padding:4px;border-right:1px solid #4b5563;background:${bg};display:flex;flex-direction:column;justify-content:space-between;align-items:center;">
+                <div style="width:50%;padding:2px;border-right:1px solid #4b5563;background:${bg};display:flex;flex-direction:column;justify-content:space-between;align-items:center;">
                     ${contenantImg}
-                    <span style="font-size:8px;font-weight:700;text-align:center;color:#111;">${meo.produit_code || ''}${meo.moyen_dosage_code ? '.' + meo.moyen_dosage_code : ''}</span>
+                    <span style="font-size:7px;font-weight:700;text-align:center;color:#111;line-height:1;">${meo.produit_code || ''}${meo.moyen_dosage_code ? '.' + meo.moyen_dosage_code : ''}</span>
                 </div>
-                <div style="width:50%;padding:4px;display:flex;flex-direction:column;justify-content:center;align-items:center;">
-                    <span style="font-size:7px;color:#6b7280;">Eau</span>
-                    <span style="font-size:8px;font-weight:700;">${meo.volume_eau || ''}</span>
+                <div style="width:50%;padding:2px;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+                    <span style="font-size:6px;color:#6b7280;line-height:1;">Eau</span>
+                    <span style="font-size:7px;font-weight:700;line-height:1;">${meo.volume_eau || ''}</span>
                 </div>
             </div>
             <div style="display:flex;border-top:1px solid #4b5563;">
-                <div style="width:50%;padding:4px;border-right:1px solid #4b5563;display:flex;align-items:center;justify-content:center;">${moyenImg}</div>
+                <div style="width:50%;padding:2px;border-right:1px solid #4b5563;display:flex;align-items:center;justify-content:center;">${moyenImg}</div>
                 <div style="width:50%;display:flex;flex-direction:column;">
-                    <div style="flex:1;padding:4px;display:flex;align-items:center;justify-content:center;">
-                        <span style="font-size:8px;font-weight:700;">${meo.volume_produit != null ? meo.volume_produit : ''}</span>
+                    <div style="flex:1;padding:2px;display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:7px;font-weight:700;line-height:1;">${meo.volume_produit != null ? meo.volume_produit : ''}</span>
                     </div>
-                    <div style="flex:1;padding:4px;display:flex;align-items:center;justify-content:center;">${tcImg}</div>
+                    <div style="flex:1;padding:2px;display:flex;align-items:center;justify-content:center;">${tcImg}</div>
                 </div>
             </div>`;
         return div;

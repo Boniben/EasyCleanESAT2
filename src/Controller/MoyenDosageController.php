@@ -18,7 +18,15 @@ final class MoyenDosageController extends AbstractController
     public function index(MoyenDosageRepository $moyenDosageRepository): Response
     {
         return $this->render('moyen_dosage/index.html.twig', [
-            'moyen_dosages' => $moyenDosageRepository->findAll(),
+            'moyen_dosages' => $moyenDosageRepository->findAllActif(),
+        ]);
+    }
+
+    #[Route('/inactif', name: 'app_moyen_dosage_inactif', methods: ['GET'])]
+    public function indexInactif(MoyenDosageRepository $moyenDosageRepository): Response
+    {
+        return $this->render('moyen_dosage/index_inactif.html.twig', [
+            'moyen_dosages' => $moyenDosageRepository->findAllInactif(),
         ]);
     }
 
@@ -117,5 +125,83 @@ final class MoyenDosageController extends AbstractController
         }
 
         return $this->redirectToRoute('app_moyen_dosage_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/toggle-actif', name: 'app_moyen_dosage_toggle_actif', methods: ['POST'])]
+    public function toggleActif(Request $request, MoyenDosage $moyenDosage, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_actif'.$moyenDosage->getId(), $request->getPayload()->getString('_token'))) {
+            $shouldDeactivate = $moyenDosage->isActif();
+            $moyenDosage->setActif(!$shouldDeactivate);
+            $now = new \DateTime();
+
+            if ($shouldDeactivate) {
+                $moyenDosage->setDateDesactivation($now);
+                $nbMeo = 0;
+                $nbAct = 0;
+                foreach ($moyenDosage->getMeoProduits() as $meo) {
+                    if ($meo->isActif()) {
+                        $meo->setActif(false);
+                        $meo->setDateDesactivation($now);
+                        $nbMeo++;
+                    }
+                    foreach ($meo->getActions() as $action) {
+                        if ($action->isActif()) {
+                            $action->setActif(false);
+                            $action->setDateDesactivation($now);
+                            $entityManager->persist($action);
+                            $nbAct++;
+                        }
+                    }
+                }
+                if ($nbAct > 0) {
+                    $this->addFlash('warning', sprintf(
+                        'Moyen de dosage désactivé. %d MEO produit(s) et %d action(s) liée(s) ont également été désactivé(e)s.',
+                        $nbMeo, $nbAct
+                    ));
+                } elseif ($nbMeo > 0) {
+                    $this->addFlash('success', sprintf('Moyen de dosage désactivé (%d MEO produit(s) désactivé(s)).', $nbMeo));
+                } else {
+                    $this->addFlash('success', 'Moyen de dosage désactivé.');
+                }
+            } else {
+                $moyenDosage->setDateDesactivation(null);
+                $this->addFlash('success', 'Moyen de dosage réactivé.');
+            }
+
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_moyen_dosage_show', ['id' => $moyenDosage->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/bulk/reactivate', name: 'app_moyen_dosage_bulk_reactivate', methods: ['POST'])]
+    public function bulkReactivate(Request $request, MoyenDosageRepository $moyenDosageRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_reactivate_moyen_dosage', $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_moyen_dosage_inactif');
+        }
+
+        $ids = $request->getPayload()->all('ids');
+        $ids = array_filter(array_map('intval', is_array($ids) ? $ids : []));
+
+        if (empty($ids)) {
+            $this->addFlash('warning', 'Aucun moyen de dosage sélectionné.');
+            return $this->redirectToRoute('app_moyen_dosage_inactif');
+        }
+
+        $count = 0;
+        foreach ($moyenDosageRepository->findBy(['id' => $ids]) as $md) {
+            if (!$md->isActif()) {
+                $md->setActif(true);
+                $md->setDateDesactivation(null);
+                $count++;
+            }
+        }
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('%d moyen(s) de dosage réactivé(s).', $count));
+        return $this->redirectToRoute('app_moyen_dosage_inactif');
     }
 }

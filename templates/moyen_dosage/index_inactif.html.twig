@@ -1,18 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Actions désactivées{% endblock %}
+{% block title %}Moyens de dosage désactivés{% endblock %}
 
 {% block body %}
-    <h1>Actions désactivées</h1>
+    <h1>Moyens de dosage désactivés</h1>
 
-    <form method="post" action="{{ path('app_actions_bulk_reactivate') }}" id="bulk-reactivate-form">
-        <input type="hidden" name="_token" value="{{ csrf_token('bulk_reactivate_actions') }}">
+    <form method="post" action="{{ path('app_moyen_dosage_bulk_reactivate') }}" id="bulk-reactivate-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('bulk_reactivate_moyen_dosage') }}">
 
         <div class="mb-3" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <button type="submit" class="btn btn-success" id="bulk-reactivate-btn" disabled>
                 ✓ Réactiver la sélection (<span id="bulk-count">0</span>)
             </button>
-            <a href="{{ path('app_actions_index') }}" class="btn btn-primary">← Retour aux actions actives</a>
+            <a href="{{ path('app_moyen_dosage_index') }}" class="btn btn-primary">← Retour aux moyens de dosage actifs</a>
             <span class="text-muted text-sm">Cochez les lignes à réactiver puis cliquez sur le bouton.</span>
         </div>
 
@@ -24,37 +24,33 @@
                     </th>
                     <th>Id</th>
                     <th>Désactivé le</th>
-                    <th>Nécessaires</th>
-                    <th>Code Produit</th>
-                    <th>Id Contenant</th>
-                    <th>Code Moyen Dilution</th>
+                    <th>Picto</th>
+                    <th>Nom</th>
+                    <th>Code</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-            {% for action in actions %}
+            {% for moyen_dosage in moyen_dosages %}
                 <tr>
                     <td style="text-align:center;">
-                        <input type="checkbox" name="ids[]" value="{{ action.id }}" class="bulk-row-check">
+                        <input type="checkbox" name="ids[]" value="{{ moyen_dosage.id }}" class="bulk-row-check">
                     </td>
-                    <td>{{ action.id }}</td>
-                    <td>{{ action.dateDesactivation ? action.dateDesactivation|date('d/m/Y H:i') : '—' }}</td>
+                    <td>{{ moyen_dosage.id }}</td>
+                    <td>{{ moyen_dosage.dateDesactivation ? moyen_dosage.dateDesactivation|date('d/m/Y H:i') : '—' }}</td>
                     <td>
-                        {% for necessaire in action.necessaire %}
-                            {{ necessaire.code }}{% if not loop.last %}, {% endif %}
-                        {% endfor %}
+                        <img src="{{ asset('PictoMoyenDosagePNG/' ~ moyen_dosage.id ~ '.png') }}" alt="Pictogramme {{ moyen_dosage.nom }}" style="max-height: 40px;">
                     </td>
-                    <td>{{ action.meoProduit ? action.meoProduit.produit.code : '-' }}</td>
-                    <td>{{ action.meoProduit ? (action.meoProduit.contenant ? action.meoProduit.contenant.id : '0') : '-' }}</td>
-                    <td>{{ action.meoProduit ? (action.meoProduit.moyenDosage ? action.meoProduit.moyenDosage.code : '0') : '-' }}</td>
+                    <td>{{ moyen_dosage.nom }}</td>
+                    <td>{{ moyen_dosage.code }}</td>
                     <td>
-                        <a href="{{ path('app_actions_show', {'id': action.id}) }}">Afficher</a>
-                        <a href="{{ path('app_actions_edit', {'id': action.id}) }}">Modifier</a>
+                        <a href="{{ path('app_moyen_dosage_show', {'id': moyen_dosage.id}) }}">Afficher</a>
+                        <a href="{{ path('app_moyen_dosage_edit', {'id': moyen_dosage.id}) }}">Modifier</a>
                     </td>
                 </tr>
             {% else %}
                 <tr>
-                    <td colspan="8">Aucune action désactivée</td>
+                    <td colspan="7">Aucun moyen de dosage désactivé</td>
                 </tr>
             {% endfor %}
             </tbody>

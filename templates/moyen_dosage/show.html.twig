@@ -32,5 +32,12 @@
 
     <a href="{{ path('app_moyen_dosage_edit', {'id': moyen_dosage.id}) }}">Modifier</a>
 
+    <form method="post" action="{{ path('app_moyen_dosage_toggle_actif', {'id': moyen_dosage.id}) }}" style="display:inline;">
+        <input type="hidden" name="_token" value="{{ csrf_token('toggle_actif' ~ moyen_dosage.id) }}">
+        <button type="submit" class="btn {% if moyen_dosage.actif %}btn-success{% else %}btn-danger{% endif %}" onclick="return confirm('Confirmer le changement d\'état ?');">
+            {% if moyen_dosage.actif %}✓ Actif{% else %}✗ Désactivé{% endif %}
+        </button>
+    </form>
+
     {{ include('moyen_dosage/_delete_form.html.twig') }}
 {% endblock %}

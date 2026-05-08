@@ -202,12 +202,6 @@ class InterventionType extends AbstractType
                 'attr' => ['min' => 0, 'max' => 59],
                 'constraints' => [new Range(['min' => 0, 'max' => 59])],
             ])
-            ->add('elementSecurites', EntityType::class, [
-                'class' => ElementSecurite::class,
-                'choice_label' => 'nom',
-                'multiple' => true,
-                'required' => false,
-            ])
         ;
     }
 

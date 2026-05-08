@@ -309,4 +309,36 @@ class Intervention
         return $this;
     }
 
+    /**
+     * Retourne la liste dédupliquée des actions désactivées rattachées à cette
+     * intervention (via les SuppInter -> Actions).
+     *
+     * @return Actions[]
+     */
+    public function getActionsDesactivees(): array
+    {
+        $seen = [];
+        $out  = [];
+        foreach ($this->suppInters as $si) {
+            foreach ($si->getActions() as $action) {
+                if ($action->isActif() === false) {
+                    $aid = $action->getId();
+                    if (!isset($seen[$aid])) {
+                        $seen[$aid] = true;
+                        $out[] = $action;
+                    }
+                }
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Vrai si au moins une action liée à cette intervention est désactivée.
+     */
+    public function hasActionDesactivee(): bool
+    {
+        return count($this->getActionsDesactivees()) > 0;
+    }
+
 }

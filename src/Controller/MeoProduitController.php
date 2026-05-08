@@ -109,19 +109,22 @@ final class MeoProduitController extends AbstractController
     {
         if ($this->isCsrfTokenValid('toggle_actif'.$meoProduit->getId(), $request->getPayload()->getString('_token'))) {
             $meoProduit->setActif(!$meoProduit->isActif());
-            
+            $now = new \DateTime();
+
             if (!$meoProduit->isActif()) {
+                $meoProduit->setDateDesactivation($now);
                 $actionsLiees = $meoProduit->getActions();
                 $nbActionsDesactivees = 0;
-                
+
                 foreach ($actionsLiees as $action) {
                     if ($action->isActif()) {
                         $action->setActif(false);
+                        $action->setDateDesactivation($now);
                         $entityManager->persist($action);
                         $nbActionsDesactivees++;
                     }
                 }
-                
+
                 if ($nbActionsDesactivees > 0) {
                     $this->addFlash('warning', sprintf(
                         'Le produit a été désactivé. %d action(s) liée(s) ont également été désactivée(s).',
@@ -131,12 +134,43 @@ final class MeoProduitController extends AbstractController
                     $this->addFlash('success', 'Le produit a été désactivé (aucune action liée).');
                 }
             } else {
+                $meoProduit->setDateDesactivation(null);
                 $this->addFlash('success', 'Le produit a été réactivé.');
             }
-            
+
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_meo_produit_show', ['id' => $meoProduit->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/bulk/reactivate', name: 'app_meo_produit_bulk_reactivate', methods: ['POST'])]
+    public function bulkReactivate(Request $request, MeoProduitRepository $meoProduitRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_reactivate_meo_produit', $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_meo_produit_inactif');
+        }
+
+        $ids = $request->getPayload()->all('ids');
+        $ids = array_filter(array_map('intval', is_array($ids) ? $ids : []));
+
+        if (empty($ids)) {
+            $this->addFlash('warning', 'Aucune mise en œuvre sélectionnée.');
+            return $this->redirectToRoute('app_meo_produit_inactif');
+        }
+
+        $count = 0;
+        foreach ($meoProduitRepository->findBy(['id' => $ids]) as $meo) {
+            if (!$meo->isActif()) {
+                $meo->setActif(true);
+                $meo->setDateDesactivation(null);
+                $count++;
+            }
+        }
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('%d mise(s) en œuvre réactivée(s).', $count));
+        return $this->redirectToRoute('app_meo_produit_inactif');
     }
 }

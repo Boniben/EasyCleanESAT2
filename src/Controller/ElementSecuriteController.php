@@ -7,6 +7,7 @@ use App\Form\ElementSecuriteType;
 use App\Repository\ElementSecuriteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,67 +16,95 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ElementSecuriteController extends AbstractController
 {
     #[Route(name: 'app_element_securite_index', methods: ['GET'])]
-    public function index(ElementSecuriteRepository $elementSecuriteRepository): Response
+    public function index(ElementSecuriteRepository $repo): Response
     {
         return $this->render('element_securite/index.html.twig', [
-            'element_securites' => $elementSecuriteRepository->findAll(),
+            'element_securites' => $repo->findAll(),
         ]);
     }
 
     #[Route('/new', name: 'app_element_securite_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $em): Response
     {
-        $elementSecurite = new ElementSecurite();
-        $form = $this->createForm(ElementSecuriteType::class, $elementSecurite);
+        $es   = new ElementSecurite();
+        $form = $this->createForm(ElementSecuriteType::class, $es);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($elementSecurite);
-            $entityManager->flush();
+            $em->persist($es);
+            $em->flush(); // flush d'abord → on a l'ID
+
+            /** @var UploadedFile|null $file */
+            $file = $form->get('pictoFile')->getData();
+            $this->savePicto($file, $es, $em);
 
             return $this->redirectToRoute('app_element_securite_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('element_securite/new.html.twig', [
-            'element_securite' => $elementSecurite,
-            'form' => $form,
+            'element_securite' => $es,
+            'form'             => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_element_securite_show', methods: ['GET'])]
-    public function show(ElementSecurite $elementSecurite): Response
+    public function show(ElementSecurite $es): Response
     {
         return $this->render('element_securite/show.html.twig', [
-            'element_securite' => $elementSecurite,
+            'element_securite' => $es,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_element_securite_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, ElementSecurite $elementSecurite, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, ElementSecurite $es, EntityManagerInterface $em): Response
     {
-        $form = $this->createForm(ElementSecuriteType::class, $elementSecurite);
+        $form = $this->createForm(ElementSecuriteType::class, $es);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            /** @var UploadedFile|null $file */
+            $file = $form->get('pictoFile')->getData();
+            $this->savePicto($file, $es, $em);
+            $em->flush();
 
-            return $this->redirectToRoute('app_element_securite_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_element_securite_show', ['id' => $es->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('element_securite/edit.html.twig', [
-            'element_securite' => $elementSecurite,
-            'form' => $form,
+            'element_securite' => $es,
+            'form'             => $form,
         ]);
     }
 
     #[Route('/{id}', name: 'app_element_securite_delete', methods: ['POST'])]
-    public function delete(Request $request, ElementSecurite $elementSecurite, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, ElementSecurite $es, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$elementSecurite->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($elementSecurite);
-            $entityManager->flush();
+        if ($this->isCsrfTokenValid('delete'.$es->getId(), $request->getPayload()->getString('_token'))) {
+            $em->remove($es);
+            $em->flush();
         }
 
         return $this->redirectToRoute('app_element_securite_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    // ── Helper upload ─────────────────────────────────────────────────────────
+
+    private function savePicto(?UploadedFile $file, ElementSecurite $es, EntityManagerInterface $em): void
+    {
+        if (!$file) {
+            return;
+        }
+
+        $dir = $this->getParameter('kernel.project_dir') . '/public/PictoElementSecuritePNG';
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+
+        $fileName = $es->getId() . '.png';
+        $file->move($dir, $fileName);
+
+        $es->setPicto($fileName);
+        $em->flush();
     }
 }

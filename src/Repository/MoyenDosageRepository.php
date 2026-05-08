@@ -16,6 +16,27 @@ class MoyenDosageRepository extends ServiceEntityRepository
         parent::__construct($registry, MoyenDosage::class);
     }
 
+    /** @return MoyenDosage[] */
+    public function findAllActif(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('actif', true)
+            ->orderBy('m.id', 'ASC')
+            ->getQuery()->getResult();
+    }
+
+    /** @return MoyenDosage[] */
+    public function findAllInactif(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('actif', false)
+            ->orderBy('m.dateDesactivation', 'DESC')
+            ->addOrderBy('m.id', 'DESC')
+            ->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return MoyenDosage[] Returns an array of MoyenDosage objects
     //     */

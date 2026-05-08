@@ -14,13 +14,13 @@
     font-size: 10px;
     color: #111;
     max-width: 980px;
-    margin: 0 auto 40px;
+    margin: 0 auto 10px;
 }
 .fiche-page {
     background: white;
     border: 1px solid #999;
-    margin-bottom: 30px;
-    padding: 10px 12px 44px;
+    margin-bottom: 10px;
+    padding: 10px 10px 44px;
     position: relative;
 }
 
@@ -30,7 +30,7 @@
 .fi-entete-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
     border: 2px solid #444;
     table-layout: fixed;
 }
@@ -83,14 +83,14 @@
     border-left: 2px solid #444 !important;
     background: #f5f5f5;
     text-align: center;
-    padding: 4px !important;
+    padding: 0 !important;
+    overflow: hidden;
 }
 .fi-td-photo img {
-    max-height: 90px;
-    max-width: 155px;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
-    margin: 0 auto;
 }
 
 /* Labels (col 2) : fond vert clair */
@@ -117,6 +117,7 @@
     padding: 2px 6px !important;
     font-size: 9px;
     border-right: 2px solid #444 !important;
+    text-align: center !important;
 }
 .fi-contrat-lbl { color: #555; font-style: italic; }
 .fi-contrat-val-txt { font-weight: 700; font-size: 10px; }
@@ -149,7 +150,7 @@
    ============================================================ */
 .fi-planning {
     border: 1px solid #555;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
 }
 .fi-planning-table {
     width: 100%;
@@ -169,51 +170,80 @@
 }
 /* Colonne bonhomme */
 .fi-col-bonhomme {
-    width: 52px;
+    width: 60px;
     background: #f8f8f8;
     vertical-align: middle;
-    font-size: 22px;
     text-align: center;
     border: 1px solid #999;
+    padding: 4px 2px !important;
+}
+.fi-bonhomme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    justify-items: center;
+}
+.fi-bonhomme-grid img {
+    height: 20px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 /* Colonne Durée */
 .fi-col-duree {
-    width: 52px;
+    width: 58px;
     background: #f8f8f8;
     vertical-align: middle;
     text-align: center;
     border: 1px solid #999;
+    padding: 2px !important;
 }
 .fi-duree-label {
     font-size: 8px;
     font-weight: 700;
     border-bottom: 1px solid #bbb;
-    padding: 1px 0;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+}
+.fi-duree-label img {
+    height: 28px;
+    display: block;
+    margin: 0 auto 1px;
+    object-fit: contain;
 }
 .fi-duree-val {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 900;
-    background: #FFD000;
-    padding: 2px 0;
+    background: #D9EAD3;
+    padding: 3px 0;
+    display: block;
 }
-/* Colonne icônes plages */
-.fi-col-icon {
-    width: 36px;
-    background: #f8f8f8;
+/* Colonne picto plage (matin / apm) */
+.fi-col-plage-picto {
+    width: 38px;
+    text-align: center;
     vertical-align: middle;
-    font-size: 14px;
+    padding: 3px !important;
+    border: 1px solid #999;
+}
+.fi-col-plage-picto img {
+    height: 22px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
 }
 /* Colonnes jours */
 .fi-col-jour { width: 68px; }
 /* Colonne autres fréquences */
 .fi-col-autrefreq {
-    width: 120px;
+    width: 130px;
     font-size: 8px;
     color: #003399;
     font-weight: 700;
     background: #fff;
     vertical-align: top;
-    padding: 3px 5px;
+    padding: 4px 5px !important;
 }
 .fi-autrefreq-body {
     font-weight: 400;
@@ -228,89 +258,181 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
 }
 .fi-schema-box {
     border: 1px solid #555;
+    display: flex;
+    flex-direction: column;
 }
 .fi-schema-inner {
     padding: 6px 8px;
 }
-/* Liste supports */
-.fi-support-list {
-    list-style: none;
+/* ---- Bloc 3 schéma interne ---- */
+.fi-schema-inner-v2 {
+    display: flex;
+    align-items: flex-start;
     padding: 0;
-    margin: 0;
 }
-.fi-support-list li {
+/* Colonne gauche : photo+0 en ligne 1, puis 6 supports */
+.fi-schema-left {
+    flex: 0 0 50%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #ccc;
+}
+/* Colonne droite : 10 supports */
+.fi-schema-right {
+    flex: 0 0 50%;
+    display: flex;
+    flex-direction: column;
+}
+/* Ligne générique : picto gauche + flèche droite */
+.fi-row-item {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 3px 0;
+    padding: 2px 6px;
     border-bottom: 1px solid #eee;
-    font-size: 9px;
+    min-height: 44px;
 }
-.fi-support-num {
-    display: inline-flex;
+.fi-row-item:last-child { border-bottom: none; }
+/* Ligne photo : plus haute */
+.fi-row-photo {
+    min-height: 180px;
+    padding: 0;
+    gap: 4px;
+}
+/* Cellule picto support */
+.fi-sp-cell {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #003399;
-    color: white;
-    font-weight: 700;
-    font-size: 8px;
+}
+.fi-sp-cell img:not(.fi-zone-photo-inline) {
+    max-height: 38px;
+    max-width: 44px;
+    object-fit: contain;
+}
+/* Photo de zone — priorité max, remplit toute la cellule */
+.fi-zone-photo-inline {
+    height: 100% !important;
+    width: 100% !important;
+    max-height: none !important;
+    max-width: none !important;
+    object-fit: cover;
+    display: block;
+}
+/* Flèche avec numéro centré */
+.fi-fleche-wrap {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
     flex-shrink: 0;
 }
-.fi-support-refs {
-    color: #666;
-    font-size: 8px;
-    margin-left: auto;
-}
-.fi-zone-picto {
-    max-height: 55px;
-    max-width: 80px;
+.fi-fleche-wrap img {
+    height: 30px;
     display: block;
-    margin: 4px auto 6px;
-    object-fit: contain;
+}
+.fi-fleche-num {
+    position: absolute;
+    top: 50%;
+    left: 44%;
+    transform: translate(-50%, -50%);
+    font-weight: 900;
+    font-size: 11px;
+    color: #1a0050;
+    line-height: 1;
+    white-space: nowrap;
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff;
 }
 
 /* Vigilances */
 .fi-vig-header {
-    background: #FFD000;
-    padding: 4px 8px;
+    background: #e8e8e8;
+    padding: 6px 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-bottom: 1px solid #555;
-    font-weight: 700;
-    font-size: 11px;
+    border-bottom: 2px solid #555;
+    font-weight: 900;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #111;
 }
-.fi-vig-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 9px;
+.fi-vig-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
-.fi-vig-table th {
-    background: #e8e8e8;
-    padding: 3px 6px;
-    border: 1px solid #999;
-    font-weight: 700;
-    font-size: 9px;
+.fi-vig-item {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1;
+    border-bottom: 2px solid #bbb;
 }
-.fi-vig-table td {
-    padding: 4px 6px;
-    border: 1px solid #bbb;
-    vertical-align: middle;
+.fi-vig-item:last-child {
+    border-bottom: none;
+}
+.fi-vig-item:nth-child(even) .fi-vig-item-picto,
+.fi-vig-item:nth-child(even) .fi-vig-item-text {
+    background: #f5f5f5;
+}
+.fi-vig-item-picto {
+    flex-shrink: 0;
+    width: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-right: 1px solid #ddd;
+    background: #fff;
+}
+.fi-vig-item-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 10px;
+    background: #fff;
+}
+.fi-vig-picto-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 62px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 .fi-vig-picto {
-    max-height: 36px;
-    max-width: 44px;
+    max-height: 54px;
+    max-width: 54px;
     object-fit: contain;
     display: block;
-    margin: 0 auto;
+}
+.fi-vig-text {
+    flex: 1;
+    text-align: left;
+}
+.fi-vig-def {
+    font-weight: 800;
+    font-size: 13px;
+    color: #111;
+    line-height: 1.3;
+}
+.fi-vig-detail {
+    font-style: italic;
+    color: #555;
+    font-size: 11px;
+    margin-top: 3px;
+    line-height: 1.3;
 }
 
 /* ============================================================
@@ -343,17 +465,20 @@
 .fi-cards-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    column-gap: 35px;
+    row-gap: 0;
     margin-bottom: 10px;
+    align-items: start;
 }
 
-/* Carte : rectangle portrait */
+/* Carte : rectangle portrait — 3 lignes fixes */
 .fi-card {
     border: 2px solid #333;
-    display: flex;
-    flex-direction: column;
-    min-height: 300px;
+    display: grid;
+    grid-template-rows: 44px 1fr 170px;
+    aspect-ratio: 3 / 4;
     font-size: 9px;
+    overflow: hidden;
 }
 
 /* En-tête carte */
@@ -362,8 +487,7 @@
     align-items: center;
     gap: 6px;
     padding: 4px 8px;
-    border-bottom: 2px solid #333;
-    min-height: 32px;
+    overflow: hidden;
     background: #fff;
 }
 .fi-card-badge {
@@ -386,6 +510,11 @@
     text-transform: uppercase;
     flex: 1;
     line-height: 1.2;
+    text-align: center;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 .fi-card-task-picto {
     max-height: 28px;
@@ -493,39 +622,230 @@
 }
 .fi-card-bottom-cell:last-child { border-right: none; }
 
-/* Sécuriser */
-.fi-securiser-icons {
-    flex: 1;
+
+/* Zone basse carte action : nécessaires (60%) + MEO (40%) */
+.fi-act-bottom {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px;
+    border-top: 1px solid #999;
+    height: 170px;
+    flex-shrink: 0;
+}
+/* Grille 2×2 nécessaires — 60% de la largeur */
+.fi-act-nec-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 85px);
+    width: 60%;
+    flex-shrink: 0;
+}
+.fi-act-nec-cell {
+    display: flex;
     align-items: center;
     justify-content: center;
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;
+    padding: 3px;
+    overflow: hidden;
 }
-.fi-securiser-item {
+.fi-act-nec-cell:nth-child(2n) { border-right: none; }
+.fi-act-nec-cell:nth-child(n+3) { border-bottom: none; }
+.fi-act-nec-cell img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* Grande case MEO — 1/3 de la largeur, hauteur 2 lignes */
+.fi-act-meo {
+    flex: 1;
+    border-left: 1px solid #999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.fi-act-meo-row {
+    display: flex;
+    flex: 1;
+}
+.fi-act-meo-row + .fi-act-meo-row { border-top: 1px solid #999; }
+.fi-act-meo-col {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    font-size: 8px;
+    justify-content: center;
+    padding: 2px;
     text-align: center;
-    max-width: 50px;
+    font-size: 8px;
+    overflow: hidden;
 }
-.fi-securiser-item img {
-    max-height: 36px;
-    max-width: 36px;
+.fi-act-meo-col img { width: 100%; height: 100%; object-fit: contain; }
+
+/* Sécuriser */
+.fi-sec-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 85px);
+    border-top: 1px solid #999;
+}
+.fi-sec-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;
+    padding: 4px;
+    height: 85px;
+}
+.fi-sec-cell:nth-child(3n) { border-right: none; }
+.fi-sec-cell:nth-child(n+4) { border-bottom: none; }
+.fi-sec-cell img {
+    max-height: 72px;
+    max-width: 72px;
     object-fit: contain;
 }
 
+/* ============================================================
+   BOUTON D'IMPRESSION (visible uniquement à l'écran)
+   ============================================================ */
+.print-bar {
+    max-width: 980px;
+    margin: 0 auto 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.btn-print {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #3d5a80;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: background 0.15s;
+}
+.btn-print:hover {
+    background: #2c4460;
+}
+
+/* ============================================================
+   LISIBILITÉ — augmentation des polices sans modifier la taille
+   des cases (on ne touche QUE font-size, jamais width/height/padding)
+   ============================================================ */
+.fi-entete-table td { font-size: 11px; }
+.fi-td-titre { font-size: 15px !important; }
+.fi-client-label-txt { font-size: 9px; }
+.fi-client-nom-txt { font-size: 22px; }
+.fi-td-label { font-size: 10px; }
+.fi-td-val { font-size: 12px; }
+.fi-td-contrat { font-size: 10px; }
+.fi-contrat-lbl { font-size: 10px; }
+.fi-contrat-val-txt { font-size: 12px; }
+.fi-zone-lbl { font-size: 10px; }
+.fi-zone-nom-txt { font-size: 18px; }
+
+/* Bloc 2 — Planning */
+.fi-planning-table th,
+.fi-planning-table td { font-size: 11px; }
+.fi-duree-label { font-size: 9px; }
+.fi-duree-val { font-size: 20px; }
+
+/* Bloc 3 — Fréquences / plages */
+.fi-freq-cell { font-size: 10px; }
+
+/* Bloc 3 — Schéma (numéros de flèches) */
+.fi-fleche-num { font-size: 13px; }
+
+/* Bloc 3 — Points de vigilance */
+.fi-vig-header { font-size: 16px; }
+.fi-vig-def { font-size: 15px; }
+.fi-vig-detail { font-size: 12px; }
+
+/* Bloc 6 — Cartes action */
+.fi-card { font-size: 10px; }
+.fi-card-title { font-size: 12px; }
+.fi-card-badge { font-size: 13px; }
+.fi-meo-wrap { font-size: 8px; }
+.fi-act-meo-col { font-size: 9px; }
+
+/* Pied de page */
+.fi-page-footer { font-size: 10px; }
+
 @media print {
-    .fiche-page {
-        border: none;
-        page-break-after: always;
+    /* Définition de la page A4 — marges à 0 pour éliminer les en-têtes/pieds de page navigateur (URL, date, n° page) */
+    @page {
+        size: A4 portrait;
         margin: 0;
-        padding: 8mm 10mm 16mm;
     }
-    .fiche-wrap { max-width: 100%; }
+
+    /* Cacher tout ce qui n'est pas la fiche : header app, footer, boutons, navigation */
+    .app-header,
+    .app-footer,
+    .no-print,
+    .print-bar {
+        display: none !important;
+    }
+
+    /* Reset complet des conteneurs Symfony */
+    html, body {
+        background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+    .app-shell, .app-main {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .app-main > .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Wrap de la fiche : on garde la largeur écran d'origine (980px) et on
+       applique un zoom pour faire tenir l'ensemble dans A4 portrait.
+       Cela préserve EXACTEMENT la mise en page écran (proportions, alignements). */
+    .fiche-wrap {
+        width: 980px !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        zoom: 0.78;
+    }
+
+    /* Chaque fiche = une page A4. On laisse la largeur naturelle 980px, le zoom du wrap fait le reste. */
+    .fiche-page {
+        border: none !important;
+        margin: 0 !important;
+        padding: 8mm !important;
+        width: 980px !important;
+        box-sizing: border-box !important;
+        page-break-after: always;
+        page-break-inside: avoid;
+    }
+    .fiche-page:last-child {
+        page-break-after: auto;
+    }
+
+    /* Forcer l'impression des couleurs de fond (cases bleues, couleurs produits, badges) */
+    *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* Empêcher les coupures à l'intérieur des éléments structurants */
+    .fi-entete-table,
+    .fi-card,
+    .fi-act-bottom,
+    table {
+        page-break-inside: avoid !important;
+    }
 }
 </style>
 
@@ -542,6 +862,12 @@
     'grey':'#9ca3af','marron':'#92400e','brown':'#92400e'
 } %}
 
+<div class="print-bar">
+    <button type="button" class="btn-print" onclick="window.print()" title="Ouvre la fenêtre d'impression du navigateur">
+        🖨️ Imprimer la fiche
+    </button>
+</div>
+
 <div class="fiche-wrap">
 
 {# ============================================================ #}
@@ -551,10 +877,20 @@
 
     {# ---- BLOC 1 : EN-TÊTE ---- #}
     <table class="fi-entete-table">
-        {# Ligne 1 : FICHE INTERVENTION | Client + nom (colspan 3) | PHOTO #}
+        {# Définition explicite des largeurs de colonnes — évite que table-layout:fixed les écrase #}
+        <colgroup>
+            <col style="width: 100px;"> {# col1 : label OU moitié titre #}
+            <col style="width: 95px;">  {# col2 : valeur OU moitié titre #}
+            <col style="width: 230px;"> {# col3 : moitié contrat/client/zone #}
+            <col style="width: 70px;">  {# col4 : moitié contrat/client/zone #}
+            <col style="width: 165px;"> {# col5 : photo #}
+        </colgroup>
+        {# Ligne 1 : FICHE INTERVENTION (col1) | Client + nom (col2-3) | PHOTO (col4, rowspan=5) #}
         <tr>
-            <td class="fi-td-titre" rowspan="5" style="background-color:#B4C6E7 !important; color:#000 !important;">FICHE<br>INTERVENTION</td>
-            <td class="fi-td-client" colspan="3">
+            <td class="fi-td-titre" colspan="2" style="background-color:#B4C6E7 !important; color:#000 !important; text-align:center !important; padding:5px 4px !important; font-size:12px !important; font-weight:900 !important;">
+                FICHE INTERVENTION
+            </td>
+            <td class="fi-td-client" colspan="2">
                 <span class="fi-client-label-txt">Client :</span>
                 <span class="fi-client-nom-txt">{{ client.nom }}</span>
             </td>
@@ -568,20 +904,20 @@
                 {% endif %}
             </td>
         </tr>
-        {# Ligne 2 : Date version | valeur | N° Contrat #}
+        {# Ligne 2 : Date version | valeur | N° Contrat (colspan=2) #}
         <tr>
             <td class="fi-td-label">Date version :</td>
             <td class="fi-td-val">{{ intervention.dateCreation ? intervention.dateCreation|date('d/m/Y') : '—' }}</td>
-            <td class="fi-td-contrat">
+            <td class="fi-td-contrat" colspan="2">
                 <span class="fi-contrat-lbl">N° Contrat : </span>
                 <span class="fi-contrat-val-txt">{{ intervention.contrat ? intervention.contrat.numero : '—' }}</span>
             </td>
         </tr>
-        {# Ligne 3 : N° Version | valeur | Zone Concernée (rowspan=3) #}
+        {# Ligne 3 : N° Version | valeur | Zone Concernée (rowspan=3, colspan=2) #}
         <tr>
             <td class="fi-td-label">N° Version :</td>
             <td class="fi-td-val">V.{{ intervention.numVersion }}</td>
-            <td class="fi-td-zone" rowspan="3">
+            <td class="fi-td-zone" rowspan="3" colspan="2">
                 <span class="fi-zone-lbl">Zone Concernée :</span>
                 <span class="fi-zone-nom-txt">{{ zone.nom }}</span>
             </td>
@@ -600,125 +936,111 @@
 
     {# ---- BLOC 2 : PLANNING ---- #}
     <div class="fi-planning">
-        <table class="fi-planning-table">
+        <table class="fi-planning-table" style="border-collapse:collapse;width:100%;">
             <colgroup>
-                <col style="width:56px">{# Bonhomme #}
-                <col style="width:58px">{# Durée #}
-                <col style="width:80px">{# Labels Début/Fin #}
-                <col>{# Lundi #}
-                <col>{# Mardi #}
-                <col>{# Mercredi #}
-                <col>{# Jeudi #}
-                <col>{# Vendredi #}
+                <col style="width:52px"> {# Bonhommes #}
+                <col style="width:58px"> {# Durée #}
+                <col style="width:38px"> {# Picto plage #}
+                <col>                    {# Lundi #}
+                <col>                    {# Mardi #}
+                <col>                    {# Mercredi #}
+                <col>                    {# Jeudi #}
+                <col>                    {# Vendredi #}
                 <col style="width:130px">{# Autres fréquences #}
             </colgroup>
             <tbody>
+
                 {# ---- Ligne 1 : en-têtes jours ---- #}
                 <tr>
-                    {# Bonhomme — rowspan 3 #}
+                    {# Bonhommes — rowspan 3, grille 3 colonnes max 2 lignes #}
                     <td rowspan="3" class="fi-col-bonhomme">
-                        <div style="font-size:28px;line-height:1;">🚶</div>
-                        <div style="font-size:9px;font-weight:700;margin-top:2px;">
-                            ×{{ intervention.nbTravailleur }}
+                        <div class="fi-bonhomme-grid">
+                            {% for i in 1..intervention.nbTravailleur %}
+                                <img src="{{ asset('PictoDiversPNG/bonhomme.png') }}" alt="travailleur">
+                            {% endfor %}
                         </div>
                     </td>
-                    {# Durée — rowspan 3 #}
+                    {# Durée — rowspan 3, horloge picto + valeur jaune #}
                     <td rowspan="3" class="fi-col-duree">
-                        <div class="fi-duree-label">Durée</div>
-                        <div class="fi-duree-val">
+                        <div class="fi-duree-label">
+                            <img src="{{ asset('PictoDiversPNG/horlogeDuréeIntervention.png') }}" alt="durée">
+                            Durée
+                        </div>
+                        <span class="fi-duree-val">
                             {% if intervention.dureeMinute > 0 %}
                                 {{ intervention.dureeHeure }}h{{ '%02d'|format(intervention.dureeMinute) }}
                             {% else %}
                                 {{ intervention.dureeHeure }}h
                             {% endif %}
-                        </div>
+                        </span>
                     </td>
-                    {# Cellule vide (icône) #}
+                    {# Cellule picto vide (header) #}
                     <td style="background:#f0f0f0;border:1px solid #999;"></td>
                     {# En-têtes jours #}
                     {% for jour in jours %}
-                        <td style="border:1px solid #999;background:#fff;font-weight:700;font-size:9px;text-align:center;padding:2px 4px;">
+                        <td style="border:1px solid #999;background:#f0f0f0;font-weight:700;font-size:9px;text-align:center;padding:3px 4px;">
                             {{ jour.nom }}
                         </td>
                     {% endfor %}
                     {# Autres fréquences — rowspan 3 #}
                     <td rowspan="3" class="fi-col-autrefreq">
-                        <div style="color:#003399;font-weight:700;font-style:italic;">Autres fréquences :</div>
-                        <div class="fi-autrefreq-body">(à compléter)</div>
+                        <div style="color:#003399;font-weight:700;font-style:italic;margin-bottom:4px;border-bottom:1px solid #ddd;padding-bottom:2px;">Autres fréquences :</div>
+                        {% if autresFrequences|length > 0 %}
+                            {% for freq in autresFrequences %}
+                                <div style="margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #eee;">
+                                    <div style="font-weight:700;color:#111;">{{ freq.tache }}</div>
+                                    <div style="color:#555;font-size:7px;">{{ freq.supports|join(', ') }}</div>
+                                    <div style="color:#003399;font-style:italic;">{{ freq.frequence }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="fi-autrefreq-body" style="color:#bbb;font-style:italic;">—</div>
+                        {% endif %}
                     </td>
                 </tr>
 
-                {# ---- Ligne 2 : Début matin (fond vert #A8D08D) ---- #}
+                {# ---- Ligne 2 : Matin (fond vert #A8D08D) — début–fin combinés ---- #}
                 <tr>
-                    <td style="border:1px solid #999;font-size:8px;font-weight:700;text-align:center;background:#A8D08D;padding:2px;">
-                        Début
+                    <td class="fi-col-plage-picto" style="background:#A8D08D;">
+                        <img src="{{ asset('PictoDiversPNG/tasseCroissantMatin.png') }}" alt="matin">
                     </td>
                     {% for jour in jours %}
-                        <td style="border:1px solid #999;text-align:center;font-size:9px;padding:2px;background:#A8D08D;">
+                        <td style="border:1px solid #999;background:#A8D08D;padding:0 !important;font-size:8px;font-weight:700;text-align:center;">
                             {% set mat = null %}
                             {% if plagesByDay[jour.id] is defined %}
                                 {% for p in plagesByDay[jour.id] %}
                                     {% if p.heureDebut.format('H') < 12 and mat is null %}{% set mat = p %}{% endif %}
                                 {% endfor %}
                             {% endif %}
-                            {{ mat ? mat.heureDebut|date('H:i') : '' }}
-                        </td>
-                    {% endfor %}
-                </tr>
-
-                {# ---- Ligne 3 : Fin matin (fond orange #FFC000) ---- #}
-                <tr>
-                    <td style="border:1px solid #999;font-size:8px;font-weight:700;text-align:center;background:#FFC000;padding:2px;">
-                        Fin
-                    </td>
-                    {% for jour in jours %}
-                        <td style="border:1px solid #999;text-align:center;font-size:9px;padding:2px;background:#FFC000;">
-                            {% set mat = null %}
-                            {% if plagesByDay[jour.id] is defined %}
-                                {% for p in plagesByDay[jour.id] %}
-                                    {% if p.heureDebut.format('H') < 12 and mat is null %}{% set mat = p %}{% endif %}
-                                {% endfor %}
+                            {% if mat %}
+                                <div style="padding:2px 0;border-bottom:1px solid #7aaa6a;">{{ mat.heureDebut|date('H:i') }}</div>
+                                <div style="padding:2px 0;">{{ mat.heureFin|date('H:i') }}</div>
                             {% endif %}
-                            {{ mat ? mat.heureFin|date('H:i') : '' }}
                         </td>
                     {% endfor %}
                 </tr>
 
-                {# ---- Ligne 4 : Début après-midi (fond vert #A8D08D) ---- #}
+                {# ---- Ligne 3 : Après-midi (fond orange #FFC000) — début–fin avec trait ---- #}
                 <tr>
-                    <td style="border:1px solid #999;font-size:8px;font-weight:700;text-align:center;background:#A8D08D;padding:2px;">
-                        Début
+                    <td class="fi-col-plage-picto" style="background:#FFC000;">
+                        <img src="{{ asset('PictoDiversPNG/litApresMidiPlanning.png') }}" alt="après-midi">
                     </td>
                     {% for jour in jours %}
-                        <td style="border:1px solid #999;text-align:center;font-size:9px;padding:2px;background:#A8D08D;">
+                        <td style="border:1px solid #999;background:#FFC000;padding:0 !important;font-size:8px;font-weight:700;text-align:center;">
                             {% set apm = null %}
                             {% if plagesByDay[jour.id] is defined %}
                                 {% for p in plagesByDay[jour.id] %}
                                     {% if p.heureDebut.format('H') >= 12 and apm is null %}{% set apm = p %}{% endif %}
                                 {% endfor %}
                             {% endif %}
-                            {{ apm ? apm.heureDebut|date('H:i') : '' }}
+                            {% if apm %}
+                                <div style="padding:2px 0;border-bottom:1px solid #cc9900;">{{ apm.heureDebut|date('H:i') }}</div>
+                                <div style="padding:2px 0;">{{ apm.heureFin|date('H:i') }}</div>
+                            {% endif %}
                         </td>
                     {% endfor %}
                 </tr>
 
-                {# ---- Ligne 5 : Fin après-midi (fond orange #FFC000) ---- #}
-                <tr>
-                    <td style="border:1px solid #999;font-size:8px;font-weight:700;text-align:center;background:#FFC000;padding:2px;">
-                        Fin
-                    </td>
-                    {% for jour in jours %}
-                        <td style="border:1px solid #999;text-align:center;font-size:9px;padding:2px;background:#FFC000;">
-                            {% set apm = null %}
-                            {% if plagesByDay[jour.id] is defined %}
-                                {% for p in plagesByDay[jour.id] %}
-                                    {% if p.heureDebut.format('H') >= 12 and apm is null %}{% set apm = p %}{% endif %}
-                                {% endfor %}
-                            {% endif %}
-                            {{ apm ? apm.heureFin|date('H:i') : '' }}
-                        </td>
-                    {% endfor %}
-                </tr>
             </tbody>
         </table>
     </div>{# /fi-planning #}
@@ -728,74 +1050,123 @@
 
         {# Schéma zone (gauche) #}
         <div class="fi-schema-box">
-            <div style="background:#e8e8e8;padding:3px 8px;border-bottom:1px solid #555;font-weight:700;font-size:10px;">
+            <div style="background:#e8e8e8;padding:6px 8px;border-bottom:2px solid #555;font-weight:900;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:0.5px;">
                 Schéma de la zone
             </div>
-            <div class="fi-schema-inner">
-                {% if zone.typeZone and zone.typeZone.picto %}
-                    <img src="{{ asset('PictoTypeZonePNG/' ~ zone.typeZone.picto) }}"
-                         alt="{{ zone.typeZone.nom }}" class="fi-zone-picto"
-                         onerror="this.style.display='none'">
-                {% endif %}
-                <ul class="fi-support-list">
-                    {% set sNum = 1 %}
-                    {% for si in intervention.suppInters %}
-                        {% set sc = si.supportClient %}
-                        <li>
-                            <span class="fi-support-num">{{ sNum }}</span>
-                            {% if sc.typeSupport and sc.typeSupport.picto %}
-                                <img src="{{ asset('PictoTypeSupportPNG/' ~ sc.typeSupport.picto) }}"
-                                     alt="{{ sc.typeSupport.nom }}"
-                                     style="max-height:20px;max-width:24px;object-fit:contain;"
+            <div class="fi-schema-inner-v2">
+
+                {# ── COLONNE GAUCHE : ligne 1 = photo+flèche0, lignes 2-7 = 6 supports ── #}
+                <div class="fi-schema-left">
+
+                    {# Ligne 1 : Photo zone (gauche, remplit la case) + flèche courte avec 0 #}
+                    <div class="fi-row-item fi-row-photo">
+                        <div class="fi-sp-cell" style="align-self:stretch; padding:0; overflow:hidden;">
+                            {% if zone.typeZone and zone.typeZone.picto %}
+                                <img class="fi-zone-photo-inline"
+                                     src="{{ asset('PictoTypeZonePNG/' ~ zone.typeZone.picto) }}"
+                                     alt="{{ zone.typeZone.nom }}"
                                      onerror="this.style.display='none'">
                             {% endif %}
-                            <span>{{ sc.typeSupport ? sc.typeSupport.nom : '—' }}</span>
-                            {% if suppInterCardNums[si.id] is defined and suppInterCardNums[si.id]|length > 0 %}
-                                <span class="fi-support-refs">
-                                    ← {{ suppInterCardNums[si.id]|join('-') }}
-                                </span>
-                            {% endif %}
-                        </li>
-                        {% set sNum = sNum + 1 %}
+                        </div>
+                        <div class="fi-fleche-wrap" style="flex-shrink:0;">
+                            <img src="{{ asset('PictoDiversPNG/PICTOFLECHECOURTE.png') }}" alt="0">
+                            <span class="fi-fleche-num">0</span>
+                        </div>
+                    </div>
+
+                    {# Lignes 2-7 : 6 premiers supports #}
+                    {% for si in sortedSuppInters|slice(0, 6) %}
+                        {% set sc = si.supportClient %}
+                        <div class="fi-row-item">
+                            <div class="fi-sp-cell">
+                                {% if sc.typeSupport and sc.typeSupport.picto %}
+                                    <img src="{{ asset('PictoTypeSupportPNG/' ~ sc.typeSupport.picto) }}"
+                                         alt="{{ sc.typeSupport.nom }}"
+                                         onerror="this.style.display='none'">
+                                {% endif %}
+                            </div>
+                            <div class="fi-fleche-wrap">
+                                <img src="{{ asset('PictoDiversPNG/PICTOFLECHE.png') }}" alt="">
+                                {% if suppInterCardNums[si.id] is defined and suppInterCardNums[si.id]|length > 0 %}
+                                    <span class="fi-fleche-num">{{ suppInterCardNums[si.id]|join('-') }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
                     {% endfor %}
-                </ul>
+
+                </div>{# /fi-schema-left #}
+
+                {# ── COLONNE DROITE : 10 supports suivants (slots 7→16) ── #}
+                <div class="fi-schema-right">
+                    {% for si in sortedSuppInters|slice(6, 10) %}
+                        {% set sc = si.supportClient %}
+                        <div class="fi-row-item">
+                            <div class="fi-sp-cell">
+                                {% if sc.typeSupport and sc.typeSupport.picto %}
+                                    <img src="{{ asset('PictoTypeSupportPNG/' ~ sc.typeSupport.picto) }}"
+                                         alt="{{ sc.typeSupport.nom }}"
+                                         onerror="this.style.display='none'">
+                                {% endif %}
+                            </div>
+                            <div class="fi-fleche-wrap">
+                                <img src="{{ asset('PictoDiversPNG/PICTOFLECHE.png') }}" alt="">
+                                {% if suppInterCardNums[si.id] is defined and suppInterCardNums[si.id]|length > 0 %}
+                                    <span class="fi-fleche-num">{{ suppInterCardNums[si.id]|join('-') }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>{# /fi-schema-right #}
+
             </div>
         </div>
 
         {# Points de vigilance (droite) #}
         <div class="fi-schema-box">
             <div class="fi-vig-header">
-                🔔 Points de Vigilance 🔔
+                Points de Vigilance
             </div>
-            {% if intervention.vigilanceInterventions|length > 0 %}
-                <table class="fi-vig-table">
-                    <thead>
-                        <tr>
-                            <th style="width:56px;">Picto</th>
-                            <th>Observations</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for vi in intervention.vigilanceInterventions %}
-                            <tr>
-                                <td style="text-align:center;">
-                                    {% if vi.vigilance and vi.vigilance.picto %}
-                                        <img src="{{ asset('PictoVigilancePNG/' ~ vi.vigilance.picto) }}"
-                                             alt="" class="fi-vig-picto"
-                                             onerror="this.style.display='none'">
-                                    {% endif %}
-                                </td>
-                                <td>{{ vi.detail }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p style="padding:8px;color:#aaa;font-style:italic;font-size:9px;">Aucun point de vigilance.</p>
-            {% endif %}
+            <div class="fi-vig-list">
+                {% for vi in intervention.vigilanceInterventions|slice(0, 5) %}
+                    {% set vig = vi.vigilance %}
+                    <div class="fi-vig-item">
+                        <div class="fi-vig-item-picto">
+                            <div class="fi-vig-picto-wrap">
+                                {% set pictoFile = vig.picto ? vig.picto : (vig.id ~ '.png') %}
+                                <img src="{{ asset('PictoVigilancePNG/' ~ pictoFile) }}"
+                                     alt="" class="fi-vig-picto"
+                                     onerror="this.style.display='none'">
+                            </div>
+                        </div>
+                        <div class="fi-vig-item-text">
+                            <div class="fi-vig-def">{{ vig.definition }}</div>
+                            {% if vi.detail %}
+                                <div class="fi-vig-detail">{{ vi.detail }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                {# Lignes vides pour compléter jusqu'à 5 #}
+                {% set vigCount = intervention.vigilanceInterventions|slice(0,5)|length %}
+                {% for i in (vigCount + 1)..5 %}
+                    <div class="fi-vig-item">
+                        <div class="fi-vig-item-picto"></div>
+                        <div class="fi-vig-item-text"></div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
 
     </div>{# /fi-schema-row #}
+
+    {# ---- BLOC 6 : 3 premières cartes action sur la page 1 ---- #}
+    {% if cardPages|length > 0 and cardPages[0]|length > 0 %}
+        <div class="fi-cards-grid" style="margin-top:16px;">
+            {% for card in cardPages[0]|slice(0, 3) %}
+                {{ include('intervention/_card.html.twig') }}
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="fi-page-footer">
         <span>{{ client.nom }}</span>
@@ -810,174 +1181,23 @@
 {# ============================================================ #}
 {% for pageCards in cardPages %}
     {% set pageNum = loop.index + 1 %}
-    <div class="fiche-page">
-        <div class="fi-cards-grid">
+    {# Première page de cartes : on saute les 3 déjà affichées sur page 1 #}
+    {% set displayCards = loop.index == 1 ? pageCards|slice(3) : pageCards %}
+    {% if displayCards|length > 0 %}
+        <div class="fiche-page">
+            <div class="fi-cards-grid">
+                {% for card in displayCards %}
+                    {{ include('intervention/_card.html.twig') }}
+                {% endfor %}
+            </div>
 
-            {% for card in pageCards %}
-
-                {# ===== CARTE 0 : SÉCURISER ===== #}
-                {% if card.type == 'securiser' %}
-                    <div class="fi-card">
-                        <div class="fi-card-header" style="background:#fff0f0;">
-                            <span class="fi-card-badge fi-badge-red">0</span>
-                            <span class="fi-card-title" style="color:#cc0000;">Sécuriser</span>
-                        </div>
-                        <div class="fi-card-body">
-                            <div class="fi-securiser-icons">
-                                {% for el in intervention.elementSecurites %}
-                                    <div class="fi-securiser-item">
-                                        {% if el.picto %}
-                                            <img src="{{ asset('PictoElementSecuritePNG/' ~ el.picto) }}"
-                                                 alt="{{ el.nom }}"
-                                                 onerror="this.style.display='none'">
-                                        {% endif %}
-                                        <span>{{ el.nom }}</span>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="fi-card-bottom">
-                                <div class="fi-card-bottom-cell"></div>
-                                <div class="fi-card-bottom-cell"></div>
-                                <div class="fi-card-bottom-cell"></div>
-                                <div class="fi-card-bottom-cell"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                {# ===== CARTES ACTION 1..N ===== #}
-                {% else %}
-                    {% set action  = card.action %}
-                    {% set cardNum = card.num %}
-
-                    {# Tâche = necessaire typeNecessaire.id == 4 #}
-                    {% set taskName = null %}
-                    {% set taskCode = null %}
-                    {% for nec in action.necessaire %}
-                        {% if nec.typeNecessaire.id == 4 %}
-                            {% set taskName = nec.nom %}
-                            {% set taskCode = nec.code %}
-                        {% endif %}
-                    {% endfor %}
-
-                    {# MEO produit #}
-                    {% set meo = action.meoProduit %}
-                    {% set hasRealMeo = meo is not null
-                        and meo.produit is not null
-                        and meo.produit.code is not null
-                        and meo.produit.code != 'P.00' %}
-                    {% set productColor = '#ffffff' %}
-                    {% if hasRealMeo and meo.produit.couleur %}
-                        {% set cName = meo.produit.couleur|lower|trim %}
-                        {% if cName starts with '#' %}
-                            {% set productColor = cName %}
-                        {% elseif colorMap[cName] is defined %}
-                            {% set productColor = colorMap[cName] %}
-                        {% endif %}
-                    {% endif %}
-
-                    <div class="fi-card">
-                        <div class="fi-card-header">
-                            <span class="fi-card-badge fi-badge-white">{{ cardNum }}</span>
-                            <span class="fi-card-title">{{ taskName ?? '—' }}</span>
-                            {% if taskCode %}
-                                <img src="{{ asset('PictoNecessairePNG/' ~ taskCode ~ '.png') }}"
-                                     alt="" class="fi-card-task-picto"
-                                     onerror="this.style.display='none'">
-                            {% endif %}
-                        </div>
-                        <div class="fi-card-body">
-                            <div class="fi-card-icons-area">
-                                {# Grille 2×2 nécessaires (hors tâche) #}
-                                <div class="fi-nec-grid">
-                                    {% set necItems = [] %}
-                                    {% for nec in action.necessaire %}
-                                        {% if nec.typeNecessaire.id != 4 %}
-                                            {% set necItems = necItems|merge([nec]) %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% for nec in necItems %}
-                                        {% set fname = (nec.typeNecessaire.nom|lower == 'consommable') ? '_' ~ nec.code : nec.code %}
-                                        <img src="{{ asset('PictoNecessairePNG/' ~ fname ~ '.png') }}"
-                                             alt="{{ nec.nom }}"
-                                             onerror="this.style.display='none'">
-                                    {% endfor %}
-                                    {# Compléter la grille 2×2 si moins de 4 éléments #}
-                                    {% for i in (necItems|length + 1)..4 %}
-                                        <div class="fi-nec-empty"></div>
-                                    {% endfor %}
-                                </div>
-
-                                {# Bloc MEO #}
-                                {% if hasRealMeo %}
-                                    <div class="fi-meo-wrap">
-                                        <div class="fi-meo-row1">
-                                            <div class="fi-meo-c1" style="background:{{ productColor }};">
-                                                {% if meo.contenant %}
-                                                    <img src="{{ asset('PictoContenantPNG/' ~ meo.contenant.id ~ '.png') }}"
-                                                         style="max-width:18px;max-height:18px;"
-                                                         onerror="this.style.display='none'">
-                                                {% endif %}
-                                                <span style="color:#111;text-align:center;">
-                                                    {% if meo.produit %}{{ meo.produit.code }}{% if meo.moyenDosage %}.{{ meo.moyenDosage.code }}{% endif %}{% endif %}
-                                                </span>
-                                            </div>
-                                            <div class="fi-meo-c2">
-                                                <span style="color:#888;">Eau</span>
-                                                <span style="font-weight:700;">
-                                                    {% if meo.contenant and meo.contenant.volumeEau is not null %}
-                                                        {{ meo.contenant.volumeEau }}{% if meo.contenant.uniteVolume %} {{ meo.contenant.uniteVolume.nom }}{% endif %}
-                                                    {% endif %}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="fi-meo-row2">
-                                            <div class="fi-meo-c3">
-                                                {% if meo.moyenDosage %}
-                                                    <img src="{{ asset('PictoMoyenDosagePNG/' ~ meo.moyenDosage.id ~ '.png') }}"
-                                                         style="max-width:20px;max-height:20px;"
-                                                         onerror="this.style.display='none'">
-                                                {% endif %}
-                                            </div>
-                                            <div class="fi-meo-c4">
-                                                <div>
-                                                    {% if meo.volumeProduit is not null %}
-                                                        {{ meo.volumeProduit }}{% if meo.uniteVolume %} {{ meo.uniteVolume.nom }}{% endif %}
-                                                    {% endif %}
-                                                </div>
-                                                <div>
-                                                    {% if meo.tempsContact %}
-                                                        <img src="{{ asset('PictoTempContactPNG/' ~ meo.tempsContact.id ~ '.png') }}"
-                                                             style="max-width:16px;max-height:16px;"
-                                                             onerror="this.style.display='none'">
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            {# Ligne de cases en bas de chaque carte #}
-                            <div class="fi-card-bottom">
-                                <div class="fi-card-bottom-cell"></div>
-                                <div class="fi-card-bottom-cell"></div>
-                                <div class="fi-card-bottom-cell"></div>
-                                <div class="fi-card-bottom-cell"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                {% endif %}
-            {% endfor %}
-
-        </div>{# /fi-cards-grid #}
-
-        <div class="fi-page-footer">
-            <span>{{ client.nom }}</span>
-            <span>{{ zone.nom }}</span>
-            <span>{{ pageNum }}/{{ totalPages }}</span>
+            <div class="fi-page-footer">
+                <span>{{ client.nom }}</span>
+                <span>{{ zone.nom }}</span>
+                <span>{{ pageNum }}/{{ totalPages }}</span>
+            </div>
         </div>
-    </div>
+    {% endif %}
 {% endfor %}
 
 </div>{# /fiche-wrap #}

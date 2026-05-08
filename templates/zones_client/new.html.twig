@@ -59,10 +59,15 @@
 			if (e.key === 'Enter') { e.preventDefault(); doTypeZoneSearch(); }
 		});
 
+		// Filtrage en temps réel pendant la saisie
+		_tzInput.addEventListener('input', function() { doTypeZoneSearch(); });
+
+		// Affichage initial : toute la liste des type de zone
+		doTypeZoneSearch();
+
 		function doTypeZoneSearch() {
 			var query = _tzInput.value.trim();
 			_tzResults.innerHTML = '';
-			if (query.length < 1) return;
 
 			fetch(_tzApiUrl + '?q=' + encodeURIComponent(query))
 				.then(function(r) { return r.json(); })

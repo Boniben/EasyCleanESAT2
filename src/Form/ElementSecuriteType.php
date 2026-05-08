@@ -3,11 +3,11 @@
 namespace App\Form;
 
 use App\Entity\ElementSecurite;
-use App\Entity\Intervention;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class ElementSecuriteType extends AbstractType
 {
@@ -16,10 +16,17 @@ class ElementSecuriteType extends AbstractType
         $builder
             ->add('nom')
             ->add('picto')
-            ->add('intervention', EntityType::class, [
-                'class' => Intervention::class,
-                'choice_label' => 'id',
-                'multiple' => true,
+            ->add('pictoFile', FileType::class, [
+                'label'       => 'Image du pictogramme',
+                'mapped'      => false,
+                'required'    => false,
+                'constraints' => [
+                    new File([
+                        'maxSize'   => '2M',
+                        'mimeTypes' => ['image/png', 'image/jpeg', 'image/webp'],
+                        'mimeTypesMessage' => 'Veuillez uploader une image PNG, JPEG ou WebP.',
+                    ]),
+                ],
             ])
         ;
     }

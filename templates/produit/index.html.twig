@@ -4,12 +4,13 @@
 {% block title %}Produit{% endblock %}
 
 {% block body %}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1>Produit</h1>
-        <a href="{{ path('app_produit_new') }}" class="btn btn-success" style="font-size: 16px; padding: 10px 20px;">+ Créer</a>
+    <div style="margin-bottom: 20px;">
+        <h1 style="text-align:center; margin:0 0 12px 0;">Produits</h1>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <a href="{{ path('app_produit_inactif') }}" class="btn" style="background:#ffd8a8;color:#7c2d12;border:1px solid #fdba74;font-weight:600;font-size:16px;padding:10px 20px;">Éléments désactivés</a>
+            <a href="{{ path('app_produit_new') }}" class="btn btn-success" style="font-size: 16px; padding: 10px 20px;">+ Créer</a>
+        </div>
     </div>
-
-    <a href="{{ path('app_produit_inactif') }}" class="btn btn-warning" style="margin-bottom: 15px;">Consulter les produits désactivés</a>
 
     <table class="table">
         <thead>

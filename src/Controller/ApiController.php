@@ -23,7 +23,16 @@ class ApiController extends AbstractController
         $query = trim($request->query->get('q', ''));
 
         if ($query === '') {
-            $results = [];
+            // Pas de query → on renvoie toute la liste pour que l'utilisateur puisse choisir
+            $results = array_map(
+                fn($tz) => [
+                    'id'          => $tz->getId(),
+                    'nom'         => $tz->getNom(),
+                    'description' => $tz->getDescription(),
+                    'picto'       => $tz->getPicto() ?: ($tz->getId() . '.png'),
+                ],
+                $typeZoneRepository->findBy([], ['nom' => 'ASC'])
+            );
         } else {
             $results = $typeZoneRepository->searchByNomOrDescription($query);
         }

@@ -18,7 +18,7 @@
     {% for zone in contrat.sitesClient.zonesClients %}
         <div class="card" style="margin-bottom: 1rem;">
             <div class="card-header">
-                <h2 style="margin:0;">{{ zone.nom }}</h2>
+                <h2 style="margin:0;"><a href="{{ path('app_zones_client_show', {'id': zone.id}) }}" style="color:inherit;text-decoration:none;border-bottom:1px dashed transparent;transition:border-color .15s;" onmouseover="this.style.borderBottomColor='currentColor'" onmouseout="this.style.borderBottomColor='transparent'">{{ zone.nom }}</a></h2>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
                     <span class="badge badge-primary">{{ zone.typeZone ? zone.typeZone.nom : 'Sans type' }}</span>
                     <a href="{{ path('app_intervention_new', {'zones_client_id': zone.id, 'contrat_id': contrat.id}) }}" class="btn btn-success btn-sm">+ Intervention</a>
@@ -28,12 +28,27 @@
             <div style="padding: 0.5rem 0 0.25rem;">
                 {% set filteredInterventions = zone.interventions|filter(i => i.contrat and i.contrat.id == contrat.id) %}
                 {% if filteredInterventions|length > 0 %}
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem;">
                         {% for intervention in filteredInterventions %}
-                            <a href="{{ path('app_intervention_show', {'id': intervention.id}) }}"
-                               class="btn btn-primary btn-sm">
-                                📋 Fiche intervention — {{ intervention.dateCreation ? intervention.dateCreation|date('d/m/Y') : 'N°' ~ intervention.id }}
-                            </a>
+                            {% set actionsKO = intervention.actionsDesactivees %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                {% if actionsKO|length > 0 %}
+                                    {% set tooltipKO = 'Action(s) désactivée(s) :' ~ "\n• " ~ actionsKO|map(a => a.label)|join("\n• ") %}
+                                    <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#dc3545;border:1px solid #a01825;flex-shrink:0;cursor:help;"
+                                          title="{{ tooltipKO }}"></span>
+                                {% else %}
+                                    <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#28a745;border:1px solid #1c7a32;flex-shrink:0;cursor:help;"
+                                          title="Toutes les actions sont actives"></span>
+                                {% endif %}
+                                <a href="{{ path('app_intervention_show', {'id': intervention.id}) }}"
+                                   class="btn btn-primary btn-sm">
+                                    📋 Fiche intervention — {{ intervention.dateCreation ? intervention.dateCreation|date('d/m/Y') : 'N°' ~ intervention.id }}
+                                </a>
+                                <a href="{{ path('app_intervention_edit', {'id': intervention.id}) }}"
+                                   class="btn btn-warning btn-sm" title="Modifier l'intervention">
+                                    ✏️ Modifier
+                                </a>
+                            </div>
                         {% endfor %}
                     </div>
                 {% else %}

@@ -34,9 +34,23 @@ class Necessaire
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
     private ?bool $actif = true;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateDesactivation = null;
+
     public function __construct()
     {
         $this->actions = new ArrayCollection();
+    }
+
+    public function getDateDesactivation(): ?\DateTimeInterface
+    {
+        return $this->dateDesactivation;
+    }
+
+    public function setDateDesactivation(?\DateTimeInterface $dateDesactivation): static
+    {
+        $this->dateDesactivation = $dateDesactivation;
+        return $this;
     }
 
     public function getId(): ?int

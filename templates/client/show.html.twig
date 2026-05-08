@@ -5,46 +5,49 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-    .client-hero {
+    /* ============================================================
+       En-tête : card client identique au style de /client
+       ============================================================ */
+    .client-hero-card {
         display: flex;
-        align-items: center;
+        flex-direction: column;
         background: white;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-sm);
-        padding: 0.9rem 1.25rem;
-        margin-bottom: 1rem;
-        position: relative;
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-xl, 14px);
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(61,90,128,0.07);
+        width: 280px;
+        margin: 0 auto 1.5rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .client-hero__logo {
-        width: 140px;
-        height: 140px;
-        object-fit: contain;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--color-border);
-        background: var(--color-bg);
-        padding: 0.5rem;
-        flex-shrink: 0;
-    }
-    .client-hero__logo-fallback {
-        width: 140px;
-        height: 140px;
-        border-radius: var(--radius-lg);
-        background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-soft));
+    .client-hero-card__photo {
+        background: linear-gradient(180deg, #f5f9fc, #eaf0f7);
+        height: 180px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.5rem;
-        flex-shrink: 0;
+        padding: 1rem;
+        border-bottom: 1px solid var(--color-border);
     }
-    .client-hero__info {
-        flex: 1;
-        text-align: center;
+    .client-hero-card__photo img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+        display: block;
     }
-    .client-hero__info h1 {
-        font-size: 2rem;
-        margin-bottom: 0;
+    .client-hero-card__photo--empty {
+        font-size: 3rem;
+        color: #c6d4e3;
+    }
+    .client-hero-card__title {
+        font-family: var(--font-heading, sans-serif);
+        font-size: 1.15rem;
+        font-weight: 700;
         color: var(--color-primary-hover);
+        text-align: center;
+        padding: 1rem 0.75rem;
+        line-height: 1.3;
+        margin: 0;
     }
 
     .site-block {
@@ -146,33 +149,117 @@
         font-style: italic;
         font-size: 0.82rem;
     }
+
+    /* ============================================================
+       Cards Zones / Contrats côte à côte (par site)
+       ============================================================ */
+    .site-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        padding: 1rem;
+        background: #fafbfd;
+    }
+    @media (max-width: 720px) {
+        .site-cards { grid-template-columns: 1fr; }
+    }
+
+    .resource-card {
+        background: white;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg, 10px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(61,90,128,0.06);
+    }
+    .resource-card__header {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .resource-card__header.is-zones {
+        background: linear-gradient(90deg, #e8f5ee, #d8eee0);
+        color: #1a6b3d;
+    }
+    .resource-card__header.is-contrats {
+        background: linear-gradient(90deg, var(--color-primary-light), #d3dfeb);
+        color: var(--color-primary-hover);
+    }
+    .resource-card__body {
+        padding: 0.75rem 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    .resource-card__body ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    .resource-card__body li a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: var(--radius-md, 6px);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.15s ease;
+    }
+    .resource-card__body li a.zone-link {
+        color: var(--color-text);
+    }
+    .resource-card__body li a.zone-link:hover {
+        background: #e8f5ee;
+        color: #1a6b3d;
+        transform: translateX(3px);
+    }
+    .resource-card__body li a.contrat-link2 {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+    .resource-card__body li a.contrat-link2:hover {
+        background: var(--color-primary-light);
+        color: var(--color-primary-hover);
+        transform: translateX(3px);
+    }
+    .resource-card__footer {
+        padding: 0.5rem 1rem 0.75rem;
+        text-align: right;
+    }
     </style>
 {% endblock %}
 
 {% block body %}
 
-    {# ---- En-tête client ---- #}
-    <div class="client-hero">
-        {# Espace gauche pour équilibrer le picto à droite #}
-        <div style="width:140px; flex-shrink:0;"></div>
-
-        <div class="client-hero__info">
-            <h1>{{ client.nom }}</h1>
+    {# ---- En-tête client : card identique à /client pour créer le lien visuel ---- #}
+    <div class="client-hero-card">
+        <div class="client-hero-card__photo">
+            {% if client.picto %}
+                <img src="{{ asset('PictoClientsPNG/' ~ client.picto) }}"
+                     alt="{{ client.nom }}"
+                     onerror="this.style.display='none'; this.parentElement.classList.add('client-hero-card__photo--empty'); this.parentElement.innerHTML='👤';">
+            {% else %}
+                <div class="client-hero-card__photo--empty">👤</div>
+            {% endif %}
         </div>
-
-        {% if client.picto %}
-            <img src="{{ asset('PictoClientsPNG/' ~ client.picto) }}"
-                 alt="{{ client.nom }}"
-                 class="client-hero__logo"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="client-hero__logo-fallback" style="display:none;">🏢</div>
-        {% else %}
-            <div class="client-hero__logo-fallback">🏢</div>
-        {% endif %}
+        <div class="client-hero-card__title">{{ client.nom }}</div>
     </div>
 
     {% if app.user and is_granted('ROLE_ADMIN') %}
-        <div class="btn-group" style="margin-bottom: 1.25rem;">
+        <div class="btn-group" style="margin-bottom: 1.25rem; justify-content:center; display:flex;">
             <a href="{{ path('app_sites_client_new', {'client_id': client.id}) }}" class="btn btn-primary btn-sm">+ Ajouter un site</a>
             <a href="{{ path('app_client_edit', {'id': client.id}) }}" class="btn btn-secondary btn-sm">Modifier le client</a>
         </div>
@@ -191,58 +278,71 @@
                 {% endif %}
             </div>
 
-            {# Tableau site / contrat / zone #}
+            {# 2 cards côte à côte : Zones (gauche) / Contrats (droite) #}
             {% set contrats = site.contrats %}
             {% set zones = site.zonesClients %}
 
-            {% if contrats|length > 0 or zones|length > 0 %}
-                <table class="site-table">
-                    <tbody>
-                        <tr>
-                            <th style="background: var(--color-primary-light); color: var(--color-primary-hover); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 1.25rem; border-bottom: 1px solid var(--color-primary-soft);">Contrats</th>
-                            <td style="padding: 0.6rem 1.25rem; border-bottom: 1px solid var(--color-border);">
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                                    {% if contrats|length > 0 %}
-                                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem;">
-                                            {% for contrat in contrats %}
-                                                <li>
-                                                    <a href="{{ path('app_contrat_show', {'id': contrat.id}) }}" class="contrat-link">📄 {{ contrat.numero }}</a>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% else %}
-                                        <span class="tag-empty">Aucun contrat</span>
-                                    {% endif %}
-                                    {% if app.user and is_granted('ROLE_ADMIN') %}
-                                        <a href="{{ path('app_contrat_new', {'site_id': site.id}) }}" class="btn btn-danger btn-sm" style="flex-shrink: 0;">+ Contrat</a>
-                                    {% else %}
-                                        <a href="{{ path('app_login') }}" class="btn btn-danger btn-sm" style="flex-shrink: 0;">+ Contrat</a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th style="background: var(--color-primary-light); color: var(--color-primary-hover); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 1.25rem;">Zones</th>
-                            <td style="padding: 0.6rem 1.25rem;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-                                {% if zones|length > 0 %}
-                                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem;">
-                                        {% for zone in zones %}
-                                            <li><a href="{{ path('app_zones_client_show', {'id': zone.id}) }}" class="zone-name" style="text-decoration: none;">📍 {{ zone.nom }}</a></li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    <span class="tag-empty">Aucune zone</span>
-                                {% endif %}
-                                <a href="{{ path('app_zones_client_new', {'site_id': site.id}) }}" class="btn btn-success btn-sm" style="flex-shrink: 0;">+ Zone</a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            {% else %}
-                <p class="tag-empty" style="padding: 1rem 1.25rem;">Aucun contrat ni zone pour ce site.</p>
-            {% endif %}
+            <div class="site-cards">
+
+                {# ---- Card Zones ---- #}
+                <div class="resource-card">
+                    <div class="resource-card__header is-zones">
+                        <span>📍 Zones ({{ zones|length }})</span>
+                    </div>
+                    <div class="resource-card__body">
+                        {% if zones|length > 0 %}
+                            <ul>
+                                {% for zone in zones %}
+                                    <li>
+                                        <a href="{{ path('app_zones_client_show', {'id': zone.id}) }}" class="zone-link">
+                                            📍 {{ zone.nom }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <span class="tag-empty">Aucune zone pour ce site.</span>
+                        {% endif %}
+                    </div>
+                    <div class="resource-card__footer">
+                        {% if app.user and is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_zones_client_new', {'site_id': site.id}) }}" class="btn btn-success btn-sm">+ Zone</a>
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="btn btn-success btn-sm">+ Zone</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# ---- Card Contrats ---- #}
+                <div class="resource-card">
+                    <div class="resource-card__header is-contrats">
+                        <span>📄 Contrats ({{ contrats|length }})</span>
+                    </div>
+                    <div class="resource-card__body">
+                        {% if contrats|length > 0 %}
+                            <ul>
+                                {% for contrat in contrats %}
+                                    <li>
+                                        <a href="{{ path('app_contrat_show', {'id': contrat.id}) }}" class="contrat-link2">
+                                            📄 {{ contrat.numero }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <span class="tag-empty">Aucun contrat pour ce site.</span>
+                        {% endif %}
+                    </div>
+                    <div class="resource-card__footer">
+                        {% if app.user and is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_contrat_new', {'site_id': site.id}) }}" class="btn btn-primary btn-sm">+ Contrat</a>
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="btn btn-primary btn-sm">+ Contrat</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
         </div>
     {% else %}
         <div class="site-block">

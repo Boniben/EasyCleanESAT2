@@ -97,19 +97,22 @@ final class NecessaireController extends AbstractController
     {
         if ($this->isCsrfTokenValid('toggle_actif'.$necessaire->getId(), $request->getPayload()->getString('_token'))) {
             $necessaire->setActif(!$necessaire->isActif());
-            
+            $now = new \DateTime();
+
             if (!$necessaire->isActif()) {
+            $necessaire->setDateDesactivation($now);
             $actionsLiees = $necessaire->getActions(); // Récupère directement les actions via la relation
             $nbActionsDesactivees = 0;
-            
+
             foreach ($actionsLiees as $action) {
                 if ($action->isActif()) {
                     $action->setActif(false);
+                    $action->setDateDesactivation($now);
                     $entityManager->persist($action);
                     $nbActionsDesactivees++;
                 }
             }
-            
+
             if ($nbActionsDesactivees > 0) {
                 $this->addFlash('warning', sprintf(
                     'Le nécessaire a été désactivé. %d action(s) lié(es) ont également été désactivée(s).',
@@ -119,12 +122,44 @@ final class NecessaireController extends AbstractController
                 $this->addFlash('success', 'Le nécessaire a été désactivé (aucune action liée).');
             }
         } else {
+            $necessaire->setDateDesactivation(null);
             $this->addFlash('success', 'Le nécessaire a été réactivé.');
         }
-            
+
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_necessaire_show', ['id' => $necessaire->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/bulk/reactivate', name: 'app_necessaire_bulk_reactivate', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN', message: 'You are not allowed to access the admin dashboard.')]
+    public function bulkReactivate(Request $request, NecessaireRepository $necessaireRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_reactivate_necessaire', $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_necessaire_inactif');
+        }
+
+        $ids = $request->getPayload()->all('ids');
+        $ids = array_filter(array_map('intval', is_array($ids) ? $ids : []));
+
+        if (empty($ids)) {
+            $this->addFlash('warning', 'Aucun nécessaire sélectionné.');
+            return $this->redirectToRoute('app_necessaire_inactif');
+        }
+
+        $count = 0;
+        foreach ($necessaireRepository->findBy(['id' => $ids]) as $necessaire) {
+            if (!$necessaire->isActif()) {
+                $necessaire->setActif(true);
+                $necessaire->setDateDesactivation(null);
+                $count++;
+            }
+        }
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('%d nécessaire(s) réactivé(s).', $count));
+        return $this->redirectToRoute('app_necessaire_inactif');
     }
 }
