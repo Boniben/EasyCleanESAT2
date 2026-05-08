@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ user.email }}{% endblock %}
+
+{% block body %}
+    <div class="page-header">
+        <h1>Modifier l'utilisateur</h1>
+        <p class="text-muted text-sm">{{ user.email }}</p>
+    </div>
+
+    <div class="form-card" style="max-width:520px; margin:0 auto;">
+        {{ form_start(form) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.roles) }}
+
+            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:0.75rem 1rem; margin:1rem 0; font-size:0.9rem; color:#0c4a6e;">
+                💡 Laisse les champs mot de passe <strong>vides</strong> pour conserver le mot de passe actuel.
+            </div>
+
+            {{ form_row(form.plainPassword.first) }}
+            {{ form_row(form.plainPassword.second) }}
+
+            <div class="btn-group" style="margin-top:1rem;">
+                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                <a href="{{ path('app_user_index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

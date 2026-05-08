@@ -238,5 +238,20 @@
         </div>
     </div>
 
+    {# Gestion des utilisateurs #}
+    <div class="admin-cat cat-blue">
+        <div class="admin-cat-header">
+            <div class="admin-cat-icon">👥</div>
+            <div>
+                <div class="admin-cat-title">Utilisateurs</div>
+                <div class="admin-cat-desc">Créer, modifier et gérer les comptes et rôles</div>
+            </div>
+        </div>
+        <div class="admin-cat-links">
+            <a href="{{ path('app_user_index') }}" class="admin-link">👥 Liste des utilisateurs</a>
+            <a href="{{ path('app_user_new') }}" class="admin-link">➕ Créer un utilisateur</a>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
