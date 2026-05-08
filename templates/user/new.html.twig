@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un utilisateur{% endblock %}
+
+{% block body %}
+    <div class="page-header">
+        <h1>Créer un nouvel utilisateur</h1>
+    </div>
+
+    <div class="form-card" style="max-width:520px; margin:0 auto;">
+        {{ form_start(form) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.roles) }}
+            {{ form_row(form.plainPassword.first) }}
+            {{ form_row(form.plainPassword.second) }}
+
+            <div class="btn-group" style="margin-top:1rem;">
+                <button type="submit" class="btn btn-success">Créer l'utilisateur</button>
+                <a href="{{ path('app_user_index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
