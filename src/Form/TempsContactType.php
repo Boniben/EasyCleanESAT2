@@ -20,7 +20,7 @@ class TempsContactType extends AbstractType
         if ($options['picto_upload_mode']) {
             $builder->add('pictoFile', FileType::class, [
                 'mapped' => false,
-                'required' => true,
+                'required' => false,
                 'label' => 'Picto (format png)',
                 'attr' => [
                     'accept' => '.png,image/png',

@@ -1,58 +1,32 @@
-﻿{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}ElementSecurite{% endblock %}
+{% block title %}Élément sécurité — {{ element_securite.nom }}{% endblock %}
 
 {% block body %}
-    <h1>ElementSecurite</h1>
+    <div class="page-header">
+        <h1>🦺 {{ element_securite.nom }}</h1>
+        <div class="btn-group">
+            <a href="{{ path('app_element_securite_edit', {'id': element_securite.id}) }}" class="btn btn-secondary">✏️ Modifier</a>
+            <a href="{{ path('app_element_securite_index') }}" class="btn btn-outline">← Retour à la liste</a>
+        </div>
+    </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ element_securite.id }}</td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td>{{ element_securite.nom }}</td>
-            </tr>
-            <tr>
-                <th>Picto</th>
-                <td>
-                    {% set pictoFile = element_securite.picto ? element_securite.picto : (element_securite.id ~ '.png') %}
-                    <div class="tile-item-display">
-                        <img src="{{ asset('PictoElementSecuritePNG/' ~ pictoFile) }}" alt="{{ element_securite.nom }}" class="tile-picto" onerror="this.style.display='none'">
-                        <span>{{ element_securite.nom }}</span>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="card" style="max-width:500px;">
+        <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.25rem;">
+            {% set pictoFile = element_securite.picto ? element_securite.picto : (element_securite.id ~ '.png') %}
+            <img src="{{ asset('PictoElementSecuritePNG/' ~ pictoFile) }}"
+                 alt="{{ element_securite.nom }}"
+                 style="width:90px;height:90px;object-fit:contain;border:1px solid #ddd;border-radius:8px;padding:6px;background:#fff;"
+                 onerror="this.style.display='none'">
+            <div>
+                <div style="font-size:1.3rem;font-weight:700;">{{ element_securite.nom }}</div>
+                <div class="text-muted text-sm">ID : {{ element_securite.id }}</div>
+                <div class="text-muted text-sm">Fichier : {{ element_securite.picto ?? (element_securite.id ~ '.png') }}</div>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_element_securite_index') }}">Retour a la liste</a>
-
-    <a href="{{ path('app_element_securite_edit', {'id': element_securite.id}) }}">Modifier</a>
-
-    {{ include('element_securite/_delete_form.html.twig') }}
-
-<style>
-.tile-item-display {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.5rem 0.8rem;
-    border: 2px solid #d0d4db;
-    border-radius: 6px;
-    background: #fff;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #1e2028;
-}
-.tile-picto {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-    display: block;
-}
-</style>
+    <div class="mt-2">
+        {{ include('element_securite/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

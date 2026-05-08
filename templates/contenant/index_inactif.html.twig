@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contenants désactivés{% endblock %}
+
+{% block body %}
+    <h1>Contenants désactivés</h1>
+
+    <form method="post" action="{{ path('app_contenant_bulk_reactivate') }}" id="bulk-reactivate-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('bulk_reactivate_contenant') }}">
+
+        <div class="mb-3" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="submit" class="btn btn-success" id="bulk-reactivate-btn" disabled>
+                ✓ Réactiver la sélection (<span id="bulk-count">0</span>)
+            </button>
+            <a href="{{ path('app_contenant_index') }}" class="btn btn-primary">← Retour aux contenants actifs</a>
+            <span class="text-muted text-sm">Cochez les lignes à réactiver puis cliquez sur le bouton.</span>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width:40px; text-align:center;">
+                        <input type="checkbox" id="bulk-select-all" title="Tout cocher / décocher">
+                    </th>
+                    <th>Id</th>
+                    <th>Désactivé le</th>
+                    <th>Picto</th>
+                    <th>Nom</th>
+                    <th>Volume eau</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for contenant in contenants %}
+                <tr>
+                    <td style="text-align:center;">
+                        <input type="checkbox" name="ids[]" value="{{ contenant.id }}" class="bulk-row-check">
+                    </td>
+                    <td>{{ contenant.id }}</td>
+                    <td>{{ contenant.dateDesactivation ? contenant.dateDesactivation|date('d/m/Y H:i') : '—' }}</td>
+                    <td>
+                        <img src="{{ asset('PictoContenantPNG/' ~ contenant.id ~ '.png') }}" alt="Pictogramme {{ contenant.nom }}" style="max-height: 40px;">
+                    </td>
+                    <td>{{ contenant.nom }}</td>
+                    <td>{{ contenant.volumeEau }}</td>
+                    <td>
+                        <a href="{{ path('app_contenant_show', {'id': contenant.id}) }}">Afficher</a>
+                        <a href="{{ path('app_contenant_edit', {'id': contenant.id}) }}">Modifier</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">Aucun contenant désactivé</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+
+    <script>
+    (function() {
+        var selectAll = document.getElementById('bulk-select-all');
+        var rowChecks = document.querySelectorAll('.bulk-row-check');
+        var btn       = document.getElementById('bulk-reactivate-btn');
+        var counter   = document.getElementById('bulk-count');
+
+        function refresh() {
+            var n = 0;
+            rowChecks.forEach(function(c) { if (c.checked) n++; });
+            counter.textContent = n;
+            btn.disabled = (n === 0);
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                rowChecks.forEach(function(c) { c.checked = selectAll.checked; });
+                refresh();
+            });
+        }
+        rowChecks.forEach(function(c) {
+            c.addEventListener('change', refresh);
+        });
+        refresh();
+    })();
+    </script>
+{% endblock %}

@@ -32,7 +32,8 @@ class NecessaireRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('n')
             ->andWhere('n.actif = :actif')
             ->setParameter('actif', false)
-            ->orderBy('n.id', 'ASC')
+            ->orderBy('n.dateDesactivation', 'DESC')
+            ->addOrderBy('n.id', 'DESC')
             ->getQuery()
             ->getResult()
         ;

@@ -16,6 +16,27 @@ class ContenantRepository extends ServiceEntityRepository
         parent::__construct($registry, Contenant::class);
     }
 
+    /** @return Contenant[] */
+    public function findAllActif(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.actif = :actif')
+            ->setParameter('actif', true)
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()->getResult();
+    }
+
+    /** @return Contenant[] */
+    public function findAllInactif(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.actif = :actif')
+            ->setParameter('actif', false)
+            ->orderBy('c.dateDesactivation', 'DESC')
+            ->addOrderBy('c.id', 'DESC')
+            ->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return Contenant[] Returns an array of Contenant objects
     //     */

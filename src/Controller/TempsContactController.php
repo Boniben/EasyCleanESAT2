@@ -71,10 +71,32 @@ final class TempsContactController extends AbstractController
     #[Route('/{id}/edit', name: 'app_temps_contact_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, TempsContact $tempsContact, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(TempsContactType::class, $tempsContact);
+        $form = $this->createForm(TempsContactType::class, $tempsContact, [
+            'picto_upload_mode' => true,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $uploadedPicto = $form->get('pictoFile')->getData();
+
+            if ($uploadedPicto) {
+                $targetDirectory = $this->getParameter('kernel.project_dir').'/public/PictoTempContactPNG';
+
+                if (!is_dir($targetDirectory)) {
+                    mkdir($targetDirectory, 0775, true);
+                }
+
+                $pictoFileName = $tempsContact->getId().'.png';
+                $targetPath = $targetDirectory.'/'.$pictoFileName;
+
+                if (file_exists($targetPath)) {
+                    unlink($targetPath);
+                }
+
+                $uploadedPicto->move($targetDirectory, $pictoFileName);
+                $tempsContact->setPicto($pictoFileName);
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_temps_contact_index', [], Response::HTTP_SEE_OTHER);

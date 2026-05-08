@@ -39,6 +39,17 @@ export default class extends Controller {
 
         const clientVal = this.clientTarget.value;
 
+        // Afficher le picto si client déjà sélectionné au chargement
+        const img = document.getElementById('client-picto-preview');
+        if (img && clientVal) {
+            const selectedOption = this.clientTarget.options[this.clientTarget.selectedIndex];
+            const picto = selectedOption ? selectedOption.dataset.picto : null;
+            if (picto) {
+                img.src = '/easycleanesat/public/PictoClientsPNG/' + picto;
+                img.style.display = 'block';
+            }
+        }
+
         if (!clientVal) {
             // Aucun client pré-sélectionné : vider et désactiver site/contrat/zone
             this.resetSelect(this.siteTarget);
@@ -61,15 +72,26 @@ export default class extends Controller {
      * @param {Event} event L'événement change du select
      */
     async onClientChange(event) {
-        const clientId = event.target.value;  // Récupère l'ID du client sélectionné
-        
-        // Réinitialiser tous les champs qui dépendent du client
-        // (site, contrat, zone) car ils ne sont plus valides
+        const clientId = event.target.value;
+
         this.resetSelect(this.siteTarget);
         this.resetSelect(this.contratTarget);
         this.resetSelect(this.zoneTarget);
 
-        // Si un client est sélectionné (pas l'option vide), charger ses sites
+        // Mise à jour du picto client
+        const img = document.getElementById('client-picto-preview');
+        if (img) {
+            const selectedOption = event.target.options[event.target.selectedIndex];
+            const picto = selectedOption ? selectedOption.dataset.picto : null;
+            if (picto && clientId) {
+                img.src = '/easycleanesat/public/PictoClientsPNG/' + picto;
+                img.style.display = 'block';
+            } else {
+                img.src = '';
+                img.style.display = 'none';
+            }
+        }
+
         if (clientId) {
             await this.loadSites(clientId);
         }

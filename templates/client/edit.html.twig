@@ -9,9 +9,7 @@
 		<h1>Modifier le client</h1>
 	</div>
 
-	<div class="form-card">
-		{{ include('client/_form.html.twig', {'button_label': 'Enregistrer'}) }}
-	</div>
+	{{ include('client/_form.html.twig', {'button_label': 'Enregistrer'}) }}
 
 	<div class="btn-group mt-2">
 		<a href="{{ path('app_client_show', {'id': client.id}) }}" class="btn btn-secondary">← Retour</a>

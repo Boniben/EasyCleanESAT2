@@ -37,23 +37,37 @@ final class SupportClientController extends AbstractController
         if ($request->isMethod('POST')) {
             $typeSupportIds = $request->request->all('type_support_ids');
             $zoneId = $request->request->get('zone_id');
-            $zone = $entityManager->getRepository(ZonesClient::class)->find($zoneId);
+            $postZone = $entityManager->getRepository(ZonesClient::class)->find($zoneId);
 
-            if ($zone && !empty($typeSupportIds)) {
+            // Persiste les supports cochés (s'il y en a)
+            if ($postZone && !empty($typeSupportIds)) {
                 $typeSupportRepo = $entityManager->getRepository(\App\Entity\TypeSupport::class);
+                $count = 0;
                 foreach ($typeSupportIds as $tsId) {
                     $typeSupport = $typeSupportRepo->find($tsId);
                     if ($typeSupport) {
                         $supportClient = new SupportClient();
-                        $supportClient->setZonesClient($zone);
+                        $supportClient->setZonesClient($postZone);
                         $supportClient->setTypeSupport($typeSupport);
                         $entityManager->persist($supportClient);
+                        $count++;
                     }
                 }
                 $entityManager->flush();
-                $clientId = $zone->getSitesClient()->getClient()->getId();
+                $this->addFlash('success', sprintf('%d support(s) ajouté(s) à la zone « %s ».', $count, $postZone->getNom()));
+            } elseif (!$postZone) {
+                $this->addFlash('warning', 'Zone introuvable, aucun support ajouté.');
+            } else {
+                $this->addFlash('info', 'Aucun support sélectionné.');
+            }
+
+            // Redirection systématique après POST vers la page du client
+            $targetZone = $postZone ?? $zone;
+            if ($targetZone) {
+                $clientId = $targetZone->getSitesClient()->getClient()->getId();
                 return $this->redirectToRoute('app_client_show', ['id' => $clientId], Response::HTTP_SEE_OTHER);
             }
+            return $this->redirectToRoute('app_client_index', [], Response::HTTP_SEE_OTHER);
         }
 
         // IDs déjà assignés à la zone

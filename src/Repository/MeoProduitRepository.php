@@ -41,7 +41,8 @@ class MeoProduitRepository extends ServiceEntityRepository
             ->leftJoin('m.produit', 'p')
             ->andWhere('m.actif = :actif')
             ->setParameter('actif', false)
-            ->orderBy('m.id', 'ASC');
+            ->orderBy('m.dateDesactivation', 'DESC')
+            ->addOrderBy('m.id', 'DESC');
 
         if ($produitId !== null) {
             $queryBuilder

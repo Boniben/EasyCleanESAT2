@@ -1,0 +1,180 @@
+{# ===== CARTE 0 : SÉCURISER ===== #}
+{% if card.type == 'securiser' %}
+    <div class="fi-card">
+
+        {# Ligne 1 : en-tête #}
+        <div class="fi-card-header" style="background:#fff0f0;border-bottom:2px solid #333;">
+            <span class="fi-card-badge fi-badge-red">0</span>
+            <span class="fi-card-title" style="color:#cc0000;">Sécuriser</span>
+        </div>
+
+        {# Ligne 2 : grand picto centré #}
+        <div style="display:flex;justify-content:center;align-items:center;overflow:hidden;">
+            <img src="{{ asset('PictoNecessairePNG/T.21.png') }}"
+                 alt="Sécuriser"
+                 style="width:75%;height:75%;object-fit:contain;"
+                 onerror="this.style.display='none'">
+        </div>
+
+        {# Ligne 3 : grille 2×3 éléments de sécurité #}
+        <div class="fi-sec-grid">
+            {% set elems = intervention.elementSecurites|slice(0, 6) %}
+            {% for el in elems %}
+                <div class="fi-sec-cell">
+                    {% set elPicto = el.picto ? el.picto : (el.id ~ '.png') %}
+                    <img src="{{ asset('PictoElementSecuritePNG/' ~ elPicto) }}"
+                         alt="{{ el.nom }}"
+                         onerror="this.style.display='none'">
+                </div>
+            {% endfor %}
+            {% for i in (elems|length + 1)..6 %}
+                <div class="fi-sec-cell"></div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+{# ===== CARTES ACTION 1..N ===== #}
+{% else %}
+    {% set action  = card.action %}
+    {% set cardNum = card.num %}
+
+    {# Détection par préfixe de code #}
+    {% set taskName = null %}
+    {% set taskCode = null %}
+    {% set necMat   = null %}
+    {% set necReu   = null %}
+    {% set necAcc   = null %}
+    {% set necCon   = null %}
+
+    {% for nec in action.necessaire %}
+        {% set tid = nec.typeNecessaire.id %}
+        {% if tid == 4 %}
+            {% set taskName = nec.nom %}
+            {% set taskCode = nec.code %}
+        {% elseif tid == 1 %}
+            {% set necMat = nec %}
+        {% elseif tid == 2 %}
+            {% set necReu = nec %}
+        {% elseif tid == 3 %}
+            {% set necAcc = nec %}
+        {% elseif tid == 6 %}
+            {% set necCon = nec %}
+        {% endif %}
+    {% endfor %}
+
+    {# MEO produit #}
+    {% set meo = action.meoProduit %}
+    {% set hasRealMeo = meo is not null
+        and meo.produit is not null
+        and meo.produit.code is not null
+        and meo.produit.code != 'P.00' %}
+    {% set productColor = '#ffffff' %}
+    {% if hasRealMeo and meo.produit.couleur %}
+        {% set cName = meo.produit.couleur|lower|trim %}
+        {% if cName starts with '#' %}
+            {% set productColor = cName %}
+        {% elseif colorMap[cName] is defined %}
+            {% set productColor = colorMap[cName] %}
+        {% endif %}
+    {% endif %}
+
+    <div class="fi-card">
+
+        {# Ligne 1 : en-tête — sans trait bas #}
+        <div class="fi-card-header">
+            <span class="fi-card-badge fi-badge-white">{{ cardNum }}</span>
+            <span class="fi-card-title">{{ taskName ?? '—' }}</span>
+        </div>
+
+        {# Ligne 2 : grand picto tâche centré (75%×75% comme Sécuriser) #}
+        <div style="display:flex;justify-content:center;align-items:center;overflow:hidden;">
+            {% if taskCode %}
+                <img src="{{ asset('PictoNecessairePNG/' ~ taskCode ~ '.png') }}"
+                     alt="{{ taskName }}"
+                     style="width:75%;height:75%;object-fit:contain;"
+                     onerror="this.style.display='none'">
+            {% endif %}
+        </div>
+
+        {# Ligne 3 : nécessaires (60%) + MEO (40%) #}
+        <div class="fi-act-bottom">
+
+            {# Grille 2×2 — slot par préfixe de code #}
+            <div class="fi-act-nec-grid">
+                <div class="fi-act-nec-cell">
+                    {% if necMat %}
+                        <img src="{{ asset('PictoNecessairePNG/' ~ necMat.code ~ '.png') }}"
+                             alt="{{ necMat.nom }}" onerror="this.style.display='none'">
+                    {% endif %}
+                </div>
+                <div class="fi-act-nec-cell">
+                    {% if necReu %}
+                        <img src="{{ asset('PictoNecessairePNG/' ~ necReu.code ~ '.png') }}"
+                             alt="{{ necReu.nom }}" onerror="this.style.display='none'">
+                    {% endif %}
+                </div>
+                <div class="fi-act-nec-cell">
+                    {% if necAcc %}
+                        <img src="{{ asset('PictoNecessairePNG/' ~ necAcc.code ~ '.png') }}"
+                             alt="{{ necAcc.nom }}" onerror="this.style.display='none'">
+                    {% endif %}
+                </div>
+                <div class="fi-act-nec-cell">
+                    {% if necCon %}
+                        <img src="{{ asset('PictoNecessairePNG/_' ~ necCon.code ~ '.png') }}"
+                             alt="{{ necCon.nom }}" onerror="this.style.display='none'">
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Case MEO — 40% de la largeur, hauteur totale (2 lignes) #}
+            <div class="fi-act-meo">
+                {% if hasRealMeo %}
+                    <div class="fi-act-meo-row">
+                        <div class="fi-act-meo-col" style="background:{{ productColor }};">
+                            {% if meo.contenant %}
+                                <img src="{{ asset('PictoContenantPNG/' ~ meo.contenant.id ~ '.png') }}"
+                                     onerror="this.style.display='none'">
+                            {% endif %}
+                            <span style="font-weight:700;color:#111;margin-top:2px;">
+                                {% if meo.produit %}{{ meo.produit.code }}{% if meo.moyenDosage %}.{{ meo.moyenDosage.code }}{% endif %}{% endif %}
+                            </span>
+                        </div>
+                        <div class="fi-act-meo-col">
+                            <span style="color:#888;font-size:7px;">Eau</span>
+                            <span style="font-weight:700;">
+                                {% if meo.contenant and meo.contenant.volumeEau is not null %}
+                                    {{ meo.contenant.volumeEau }}{% if meo.contenant.uniteVolume %} {{ meo.contenant.uniteVolume.nom }}{% endif %}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="fi-act-meo-row">
+                        <div class="fi-act-meo-col">
+                            {% if meo.moyenDosage %}
+                                <img src="{{ asset('PictoMoyenDosagePNG/' ~ meo.moyenDosage.id ~ '.png') }}"
+                                     onerror="this.style.display='none'">
+                            {% endif %}
+                        </div>
+                        <div class="fi-act-meo-col">
+                            <span style="font-weight:700;">
+                                {% if meo.volumeProduit is not null %}
+                                    {{ meo.volumeProduit }}{% if meo.uniteVolume %} {{ meo.uniteVolume.nom }}{% endif %}
+                                {% endif %}
+                            </span>
+                            {% if meo.tempsContact %}
+                                <img src="{{ asset('PictoTempContactPNG/' ~ meo.tempsContact.id ~ '.png') }}"
+                                     style="max-width:22px;max-height:22px;"
+                                     onerror="this.style.display='none'">
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>{# /fi-act-bottom #}
+
+    </div>{# /fi-card #}
+
+{% endif %}

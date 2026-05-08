@@ -1,62 +1,51 @@
 {% from '_macros/action_buttons.html.twig' import action_buttons %}
-﻿{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}ElementSecurite index{% endblock %}
+{% block title %}Éléments de sécurité{% endblock %}
 
 {% block body %}
-    <h1>ElementSecurite index</h1>
+    <div class="page-header">
+        <div>
+            <h1>🦺 Éléments de sécurité</h1>
+            <p class="text-muted text-sm">{{ element_securites|length }} élément{{ element_securites|length > 1 ? 's' : '' }}</p>
+        </div>
+        <a href="{{ path('app_element_securite_new') }}" class="btn btn-success">+ Créer</a>
+    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Nom</th>
-                <th>Picto</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for element_securite in element_securites %}
-            <tr>
-                <td>{{ element_securite.id }}</td>
-                <td>{{ element_securite.nom }}</td>
-                <td>
-                    {% set pictoFile = element_securite.picto ? element_securite.picto : (element_securite.id ~ '.png') %}
-                    <div class="tile-item-display">
-                        <img src="{{ asset('PictoElementSecuritePNG/' ~ pictoFile) }}" alt="{{ element_securite.nom }}" class="tile-picto" onerror="this.style.display='none'">
-                    </div>
-                </td>
-                <td>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Picto</th>
+                    <th>Id</th>
+                    <th>Nom / Code</th>
+                    <th>Fichier picto</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for es in element_securites %}
+                {% set pictoFile = es.picto ? es.picto : (es.id ~ '.png') %}
+                <tr>
+                    <td style="width:56px;">
+                        <img src="{{ asset('PictoElementSecuritePNG/' ~ pictoFile) }}"
+                             alt="{{ es.nom }}"
+                             style="width:44px;height:44px;object-fit:contain;"
+                             onerror="this.style.display='none'">
+                    </td>
+                    <td>{{ es.id }}</td>
+                    <td><strong>{{ es.nom }}</strong></td>
+                    <td class="text-muted text-sm">{{ es.picto ?? es.id ~ '.png (défaut)' }}</td>
+                    <td>{{ action_buttons('app_element_securite_show', 'app_element_securite_edit', es.id) }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" class="text-muted">Aucun élément de sécurité.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-                    {{ action_buttons('app_element_securite_show', 'app_element_securite_edit', element_securite.id) }}
-
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_element_securite_new') }}">Creer</a>
-
-<style>
-.tile-item-display {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0.4rem 0.6rem;
-    border: 2px solid #d0d4db;
-    border-radius: 6px;
-    background: #fff;
-}
-.tile-picto {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-    display: block;
-}
-</style>
+    <div class="mt-2">
+        <a href="{{ path('app_dashboard') }}" class="btn btn-secondary">← Retour au dashboard</a>
+    </div>
 {% endblock %}

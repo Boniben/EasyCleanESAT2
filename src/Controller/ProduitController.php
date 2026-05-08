@@ -95,16 +95,82 @@ final class ProduitController extends AbstractController
             $shouldDeactivate = $produit->isActif();
 
             $produit->setActif(!$shouldDeactivate);
+            $now = new \DateTime();
 
             if ($shouldDeactivate) {
+                $produit->setDateDesactivation($now);
+                $nbMeoDesactives    = 0;
+                $nbActionsDesactivees = 0;
+
                 foreach ($produit->getMeoProduits() as $meoProduit) {
-                    $meoProduit->setActif(false);
+                    if ($meoProduit->isActif()) {
+                        $meoProduit->setActif(false);
+                        $meoProduit->setDateDesactivation($now);
+                        $nbMeoDesactives++;
+                    }
+                    // Cascade : désactiver toutes les actions qui utilisent ce MeoProduit
+                    foreach ($meoProduit->getActions() as $action) {
+                        if ($action->isActif()) {
+                            $action->setActif(false);
+                            $action->setDateDesactivation($now);
+                            $entityManager->persist($action);
+                            $nbActionsDesactivees++;
+                        }
+                    }
                 }
+
+                if ($nbActionsDesactivees > 0) {
+                    $this->addFlash('warning', sprintf(
+                        'Le produit a été désactivé. %d MEO produit(s) et %d action(s) liée(s) ont également été désactivé(e)s.',
+                        $nbMeoDesactives,
+                        $nbActionsDesactivees
+                    ));
+                } elseif ($nbMeoDesactives > 0) {
+                    $this->addFlash('success', sprintf(
+                        'Le produit a été désactivé (%d MEO produit(s) désactivé(s), aucune action liée).',
+                        $nbMeoDesactives
+                    ));
+                } else {
+                    $this->addFlash('success', 'Le produit a été désactivé.');
+                }
+            } else {
+                $produit->setDateDesactivation(null);
+                $this->addFlash('success', 'Le produit a été réactivé.');
             }
 
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_produit_show', ['id' => $produit->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/bulk/reactivate', name: 'app_produit_bulk_reactivate', methods: ['POST'])]
+    public function bulkReactivate(Request $request, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_reactivate_produit', $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_produit_inactif');
+        }
+
+        $ids = $request->getPayload()->all('ids');
+        $ids = array_filter(array_map('intval', is_array($ids) ? $ids : []));
+
+        if (empty($ids)) {
+            $this->addFlash('warning', 'Aucun produit sélectionné.');
+            return $this->redirectToRoute('app_produit_inactif');
+        }
+
+        $count = 0;
+        foreach ($produitRepository->findBy(['id' => $ids]) as $produit) {
+            if (!$produit->isActif()) {
+                $produit->setActif(true);
+                $produit->setDateDesactivation(null);
+                $count++;
+            }
+        }
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('%d produit(s) réactivé(s).', $count));
+        return $this->redirectToRoute('app_produit_inactif');
     }
 }

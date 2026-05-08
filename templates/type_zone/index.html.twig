@@ -17,22 +17,29 @@
 			<thead>
 				<tr>
 					<th>#</th>
+					<th>Picto</th>
 					<th>Nom</th>
+					<th>Description</th>
 					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 				{% for type_zone in type_zones %}
+					{% set tzPicto = type_zone.picto ? type_zone.picto : (type_zone.id ~ '.png') %}
 					<tr>
 						<td>{{ loop.index }}</td>
+						<td>
+							<img src="{{ asset('PictoTypeZonePNG/' ~ tzPicto) }}" alt="{{ type_zone.nom }}" style="max-height: 40px;" onerror="this.style.display='none'">
+						</td>
 						<td>{{ type_zone.nom }}</td>
+						<td>{{ type_zone.description ?? '' }}</td>
 						<td>
 						{{ action_buttons('app_type_zone_show', 'app_type_zone_edit', type_zone.id, true) }}
 						</td>
 					</tr>
 				{% else %}
 					<tr>
-						<td colspan="3">Aucun type de zone trouvé</td>
+						<td colspan="5">Aucun type de zone trouvé</td>
 					</tr>
 				{% endfor %}
 			</tbody>

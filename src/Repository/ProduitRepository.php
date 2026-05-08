@@ -32,7 +32,8 @@ class ProduitRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->andWhere('p.actif = :actif')
             ->setParameter('actif', false)
-            ->orderBy('p.id', 'ASC')
+            ->orderBy('p.dateDesactivation', 'DESC')
+            ->addOrderBy('p.id', 'DESC')
             ->getQuery()
             ->getResult()
         ;

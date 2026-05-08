@@ -3,15 +3,20 @@
 namespace App\Controller;
 
 use App\Entity\Actions;
+use App\Entity\ElementSecurite;
 use App\Entity\Intervention;
 use App\Entity\JourDeLaSemaine;
 use App\Entity\Plage;
 use App\Entity\SupportClient;
 use App\Entity\SuppInter;
+use App\Entity\Vigilance;
+use App\Entity\VigilanceIntervention;
 use App\Form\InterventionType;
 use App\Repository\ActionsRepository;
+use App\Repository\ElementSecuriteRepository;
 use App\Repository\InterventionRepository;
 use App\Repository\JourDeLaSemaineRepository;
+use App\Repository\VigilanceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +46,7 @@ final class InterventionController extends AbstractController
      * Sans paramètres : formulaire vierge avec listes déroulantes dynamiques (AJAX/Stimulus)
      */
     #[Route('/new', name: 'app_intervention_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, JourDeLaSemaineRepository $jourRepository, ActionsRepository $actionsRepository): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, JourDeLaSemaineRepository $jourRepository, ActionsRepository $actionsRepository, VigilanceRepository $vigilanceRepository, ElementSecuriteRepository $elementSecuriteRepository): Response
     {
         $intervention = new Intervention();
 
@@ -88,6 +93,16 @@ final class InterventionController extends AbstractController
             // Traitement des supports et actions
             $this->persistSuppInterData($request, $intervention, $entityManager);
 
+            // Traitement des vigilances
+            $this->persistVigilanceData($request, $intervention, $entityManager);
+
+            // Traitement des éléments de sécurité
+            $this->persistElementSecuriteData($request, $intervention, $entityManager);
+
+            $contrat = $intervention->getContrat();
+            if ($contrat) {
+                return $this->redirectToRoute('app_contrat_show', ['id' => $contrat->getId()], Response::HTTP_SEE_OTHER);
+            }
             return $this->redirectToRoute('app_intervention_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -98,14 +113,19 @@ final class InterventionController extends AbstractController
             : null;
 
         return $this->render('intervention/new.html.twig', [
-            'intervention'  => $intervention,
-            'form'          => $form,
-            'jours'         => $jours,
-            'plagesMap'     => [],
-            'actionsJson'   => $this->buildActionsJson($actionsRepository),
-            'suppInterJson' => 'null',
-            'initialZoneId' => $zonesClientId,
-            'zone'          => $zone,
+            'intervention'     => $intervention,
+            'form'             => $form,
+            'jours'            => $jours,
+            'plagesMap'        => [],
+            'actionsJson'      => $this->buildActionsJson($actionsRepository),
+            'suppInterJson'    => 'null',
+            'initialZoneId'    => $zonesClientId,
+            'zone'             => $zone,
+            'vigilances'           => $vigilanceRepository->findAllActif(),
+            'vigilanceDataJson'    => '[]',
+            'elementSecurites'     => $elementSecuriteRepository->findAll(),
+            'esNomMap'             => $elementSecuriteRepository->findNomMap(),
+            'elementSecuriteJson'  => '[]',
         ]);
     }
 
@@ -115,7 +135,7 @@ final class InterventionController extends AbstractController
         // Jours de la semaine triés par id (Lundi=1 ... Vendredi=5)
         $jours = $jourRepo->findBy([], ['id' => 'ASC']);
 
-        // Plages organisées par jour : [jourId => [plage matin, plage après-midi]]
+        // Plages organisées par jour
         $plagesByDay = [];
         foreach ($intervention->getPlages() as $plage) {
             $dayId = $plage->getJourDeLaSemaine()?->getId();
@@ -128,40 +148,57 @@ final class InterventionController extends AbstractController
         }
         unset($dp);
 
-        // Cartes actions numérotées séquentiellement (carte 0 = Sécuriser, 1-N = SuppInter)
-        $actionCards = [];
-        $num = 1;
-        foreach ($intervention->getSuppInters() as $si) {
-            $siNums = [];
-            foreach ($si->getActions() as $action) {
-                $siNums[] = $num;
-                $actionCards[$num] = ['action' => $action, 'suppInter' => $si];
-                $num++;
-            }
-            // Mapping suppInter.id => numéros de cartes pour l'affichage du schéma
-        }
+        // SuppInters triés par ordre
+        $sortedSuppInters = $intervention->getSuppInters()->toArray();
+        usort($sortedSuppInters, fn($a, $b) => ($a->getOrdre() ?? 0) <=> ($b->getOrdre() ?? 0));
 
-        // Mapping suppInterId => liste de numéros de cartes (pour le schéma)
-        $suppInterCardNums = [];
-        $n = 1;
-        foreach ($intervention->getSuppInters() as $si) {
-            $nums = [];
-            foreach ($si->getActions() as $action) {
-                $nums[] = $n++;
-            }
-            $suppInterCardNums[$si->getId()] = $nums;
-        }
+        // Actions uniques par ordre SuppInterActions + mapping suppInter → ordres + autresFrequences
+        $uniqueActions    = [];   // ordre => action entity
+        $suppInterCardNums = [];  // siId  => [ordres]
+        $freqGrouped      = [];  // clé tache|||frequence => {tache, supports[], frequence}
 
-        // Construction de toutes les cartes : carte 0 (Sécuriser) + cartes action 1..N
-        $allCards = [];
-        if ($intervention->getElementSecurites()->count() > 0) {
-            $allCards[] = ['type' => 'securiser'];
-        }
-        $cardNum = 1;
-        foreach ($intervention->getSuppInters() as $si) {
-            foreach ($si->getActions() as $action) {
-                $allCards[] = ['type' => 'action', 'num' => $cardNum++, 'action' => $action];
+        foreach ($sortedSuppInters as $si) {
+            $siOrdres   = [];
+            $supportNom = $si->getSupportClient()?->getTypeSupport()?->getNom() ?? '—';
+
+            foreach ($si->getSuppInterActions() as $sia) {
+                $ordre = $sia->getOrdre() ?? 0;
+                if (!isset($uniqueActions[$ordre])) {
+                    $uniqueActions[$ordre] = $sia->getAction();
+                }
+                $siOrdres[] = $ordre;
+
+                // Autres fréquences : regroupées par tâche + fréquence, supports listés
+                if ($sia->getFrequence()) {
+                    $action   = $sia->getAction();
+                    $tacheNom = null;
+                    foreach ($action->getNecessaire() as $nec) {
+                        if ($nec->getTypeNecessaire()?->getId() == 4) {
+                            $tacheNom = $nec->getNom();
+                            break;
+                        }
+                    }
+                    $tacheNom = $tacheNom ?? ('Action #' . $action->getId());
+                    $key = $tacheNom . '|||' . $sia->getFrequence();
+                    if (!isset($freqGrouped[$key])) {
+                        $freqGrouped[$key] = ['tache' => $tacheNom, 'supports' => [], 'frequence' => $sia->getFrequence()];
+                    }
+                    if (!in_array($supportNom, $freqGrouped[$key]['supports'])) {
+                        $freqGrouped[$key]['supports'][] = $supportNom;
+                    }
+                }
             }
+            sort($siOrdres);
+            $suppInterCardNums[$si->getId()] = $siOrdres;
+        }
+        $autresFrequences = array_values($freqGrouped);
+        ksort($uniqueActions);
+
+        // Construction des cartes : carte 0 (Sécuriser) toujours en premier
+        $allCards   = [];
+        $allCards[] = ['type' => 'securiser'];
+        foreach ($uniqueActions as $ordre => $action) {
+            $allCards[] = ['type' => 'action', 'num' => $ordre, 'action' => $action];
         }
 
         $cardPages  = array_chunk($allCards, 6);
@@ -171,14 +208,16 @@ final class InterventionController extends AbstractController
             'intervention'      => $intervention,
             'jours'             => $jours,
             'plagesByDay'       => $plagesByDay,
+            'sortedSuppInters'  => $sortedSuppInters,
             'suppInterCardNums' => $suppInterCardNums,
+            'autresFrequences'  => $autresFrequences,
             'cardPages'         => $cardPages,
             'totalPages'        => $totalPages,
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_intervention_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Intervention $intervention, EntityManagerInterface $entityManager, JourDeLaSemaineRepository $jourRepository, ActionsRepository $actionsRepository): Response
+    public function edit(Request $request, Intervention $intervention, EntityManagerInterface $entityManager, JourDeLaSemaineRepository $jourRepository, ActionsRepository $actionsRepository, VigilanceRepository $vigilanceRepository, ElementSecuriteRepository $elementSecuriteRepository): Response
     {
         $zonesClient = $intervention->getZonesClient();
         $contrat     = $intervention->getContrat();
@@ -194,13 +233,15 @@ final class InterventionController extends AbstractController
             $intervention->setDateModificaion(new \DateTime());
             $intervention->setNumVersion(($intervention->getNumVersion() ?? 1) + 1);
 
+            // Éléments de sécurité traités après le flush, via persistElementSecuriteData
+
             // Supprimer les anciennes plages
-            foreach ($intervention->getPlages() as $oldPlage) {
+            foreach ($intervention->getPlages()->toArray() as $oldPlage) {
                 $entityManager->remove($oldPlage);
             }
 
             // Supprimer les anciens SuppInter
-            foreach ($intervention->getSuppInters() as $oldSuppInter) {
+            foreach ($intervention->getSuppInters()->toArray() as $oldSuppInter) {
                 $entityManager->remove($oldSuppInter);
             }
 
@@ -228,6 +269,22 @@ final class InterventionController extends AbstractController
             // Recréer les supports et actions
             $this->persistSuppInterData($request, $intervention, $entityManager);
 
+            // Supprimer les anciennes vigilances
+            foreach ($intervention->getVigilanceInterventions()->toArray() as $oldVi) {
+                $entityManager->remove($oldVi);
+            }
+            $entityManager->flush();
+
+            // Recréer les vigilances
+            $this->persistVigilanceData($request, $intervention, $entityManager);
+
+            // Traitement des éléments de sécurité
+            $this->persistElementSecuriteData($request, $intervention, $entityManager);
+
+            $contrat = $intervention->getContrat();
+            if ($contrat) {
+                return $this->redirectToRoute('app_contrat_show', ['id' => $contrat->getId()], Response::HTTP_SEE_OTHER);
+            }
             return $this->redirectToRoute('app_intervention_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -241,14 +298,42 @@ final class InterventionController extends AbstractController
             $plagesMap[$jourId][$period] = $plage;
         }
 
+        // Construire vigilanceDataJson depuis les VigilanceIntervention existantes
+        $vigilanceData = [];
+        foreach ($intervention->getVigilanceInterventions() as $vi) {
+            $vig = $vi->getVigilance();
+            $vigilanceData[] = [
+                'id'         => $vig->getId(),
+                'definition' => $vig->getDefinition(),
+                'picto'      => $vig->getPicto(),
+                'detail'     => $vi->getDetail(),
+            ];
+        }
+
+        // Construire elementSecuriteJson avec les vrais noms depuis necessaire
+        $esNomMap = $elementSecuriteRepository->findNomMap();
+        $elementSecuriteData = [];
+        foreach ($intervention->getElementSecurites() as $el) {
+            $elementSecuriteData[] = [
+                'id'    => $el->getId(),
+                'nom'   => $esNomMap[$el->getNom()] ?? $el->getNom(),
+                'picto' => $el->getPicto() ?? ($el->getId() . '.png'),
+            ];
+        }
+
         return $this->render('intervention/edit.html.twig', [
-            'intervention'  => $intervention,
-            'form'          => $form,
-            'jours'         => $jours,
-            'plagesMap'     => $plagesMap,
-            'actionsJson'   => $this->buildActionsJson($actionsRepository),
-            'suppInterJson' => $this->buildSuppInterJson($intervention),
-            'initialZoneId' => $zonesClient ? $zonesClient->getId() : null,
+            'intervention'         => $intervention,
+            'form'                 => $form,
+            'jours'                => $jours,
+            'plagesMap'            => $plagesMap,
+            'actionsJson'          => $this->buildActionsJson($actionsRepository),
+            'suppInterJson'        => $this->buildSuppInterJson($intervention),
+            'initialZoneId'        => $zonesClient ? $zonesClient->getId() : null,
+            'vigilances'           => $vigilanceRepository->findAllActif(),
+            'vigilanceDataJson'    => json_encode($vigilanceData),
+            'elementSecurites'    => $elementSecuriteRepository->findAll(),
+            'esNomMap'            => $esNomMap,
+            'elementSecuriteJson' => json_encode($elementSecuriteData),
         ]);
     }
 
@@ -282,7 +367,7 @@ final class InterventionController extends AbstractController
             if ($typeId === 4) {
                 $tache = ['nom' => $nec->getNom(), 'code' => $nec->getCode()];
             } else {
-                $necessaires[] = ['code' => $nec->getCode(), 'nom' => $nec->getNom(), 'type_nom' => $typeNom];
+                $necessaires[] = ['code' => $nec->getCode(), 'nom' => $nec->getNom(), 'type_nom' => $typeNom, 'type_id' => $typeId];
             }
         }
 
@@ -365,14 +450,63 @@ final class InterventionController extends AbstractController
         }
         $em->flush();
 
-        // Lier les actions aux SuppInter
+        // Lier les actions aux SuppInter avec leur ordre et fréquence
         foreach ($data['actions'] ?? [] as $actionData) {
             $action = $em->getReference(Actions::class, (int)$actionData['actions_id']);
+            $ordre = (int)($actionData['ordre'] ?? 0);
+            $frequence = !empty($actionData['frequence']) ? $actionData['frequence'] : null;
             foreach ($actionData['supp_inter_positions'] as $position) {
                 if (isset($suppInterMap[(int)$position])) {
-                    $suppInterMap[(int)$position]->addAction($action);
+                    $suppInterMap[(int)$position]->addAction($action, $ordre, $frequence);
                 }
             }
+        }
+        $em->flush();
+    }
+
+    private function persistElementSecuriteData(Request $request, Intervention $intervention, EntityManagerInterface $em): void
+    {
+        $raw = $request->request->get('element_securite_data', '');
+        if (empty($raw)) return;
+        $data = json_decode($raw, true);
+        if (!is_array($data)) return;
+
+        $submittedIds = array_column($data, 'id');
+
+        // Retirer les éléments désélectionnés (côté propriétaire)
+        foreach ($intervention->getElementSecurites()->toArray() as $el) {
+            if (!in_array($el->getId(), $submittedIds, true)) {
+                $el->removeIntervention($intervention);
+            }
+        }
+
+        // Ajouter les nouveaux éléments
+        $currentIds = array_map(fn($el) => $el->getId(), $intervention->getElementSecurites()->toArray());
+        foreach ($submittedIds as $id) {
+            if (!in_array($id, $currentIds, true)) {
+                $el = $em->getReference(ElementSecurite::class, $id);
+                $el->addIntervention($intervention);
+            }
+        }
+
+        $em->flush();
+    }
+
+    private function persistVigilanceData(Request $request, Intervention $intervention, EntityManagerInterface $em): void
+    {
+        $raw = $request->request->get('vigilance_data', '');
+        if (empty($raw)) return;
+
+        $data = json_decode($raw, true);
+        if (!is_array($data)) return;
+
+        foreach ($data as $item) {
+            $vigilance = $em->getReference(Vigilance::class, (int)$item['id']);
+            $vi = new VigilanceIntervention();
+            $vi->setVigilance($vigilance);
+            $vi->setIntervention($intervention);
+            $vi->setDetail(!empty($item['detail']) ? $item['detail'] : null);
+            $em->persist($vi);
         }
         $em->flush();
     }

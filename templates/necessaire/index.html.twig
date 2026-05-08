@@ -1,42 +1,51 @@
 {% from '_macros/action_buttons.html.twig' import action_buttons %}
-﻿{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Necessaire index{% endblock %}
 
 {% block body %}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1>Nécessaires</h1>
-        <a href="{{ path('app_necessaire_new') }}" class="btn btn-success" style="font-size: 16px; padding: 10px 20px;">+ Créer</a>
+    <div style="margin-bottom: 20px;">
+        <h1 style="text-align:center; margin:0 0 12px 0;">Nécessaires</h1>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <a href="{{ path('app_necessaire_inactif') }}" class="btn" style="background:#ffd8a8;color:#7c2d12;border:1px solid #fdba74;font-weight:600;font-size:16px;padding:10px 20px;">Éléments désactivés</a>
+            <a href="{{ path('app_necessaire_new') }}" class="btn btn-success" style="font-size: 16px; padding: 10px 20px;">+ Créer</a>
+        </div>
     </div>
-
-    <a href="{{ path('app_necessaire_inactif') }}" class="btn btn-warning" style="margin-bottom: 15px;">Consulter les nécessaires désactivés</a>
 
     <table class="table">
         <thead>
             <tr>
+                <th>Picto</th>
                 <th>Id</th>
                 <th>Nom</th>
                 <th>Code</th>
                 <th>Type</th>
-                <th>actions</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
         {% for necessaire in necessaires %}
+            {% set fname = (necessaire.typeNecessaire and necessaire.typeNecessaire.nom|lower == 'consommable')
+                ? '_' ~ necessaire.code
+                : necessaire.code %}
             <tr>
+                <td style="width:48px;">
+                    <img src="{{ asset('PictoNecessairePNG/' ~ fname ~ '.png') }}"
+                         alt="{{ necessaire.nom }}"
+                         style="width:40px;height:40px;object-fit:contain;"
+                         onerror="this.style.display='none'">
+                </td>
                 <td>{{ necessaire.id }}</td>
                 <td>{{ necessaire.nom }}</td>
                 <td>{{ necessaire.code }}</td>
                 <td>{{ necessaire.typeNecessaire ? necessaire.typeNecessaire.nom : '' }}</td>
                 <td>
-
                     {{ action_buttons('app_necessaire_show', 'app_necessaire_edit', necessaire.id) }}
-
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="5">no records found</td>
+                <td colspan="6">no records found</td>
             </tr>
         {% endfor %}
         </tbody>

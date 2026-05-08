@@ -167,10 +167,43 @@ final class ActionsController extends AbstractController
     public function toggleActif(Request $request, Actions $action, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle_actif'.$action->getId(), $request->getPayload()->getString('_token'))) {
-            $action->setActif(!$action->isActif());
+            $newState = !$action->isActif();
+            $action->setActif($newState);
+            $action->setDateDesactivation($newState ? null : new \DateTime());
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_actions_show', ['id' => $action->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/bulk/reactivate', name: 'app_actions_bulk_reactivate', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN', message: 'You are not allowed to access the admin dashboard.')]
+    public function bulkReactivate(Request $request, ActionsRepository $actionsRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_reactivate_actions', $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_actions_inactif');
+        }
+
+        $ids = $request->getPayload()->all('ids');
+        $ids = array_filter(array_map('intval', is_array($ids) ? $ids : []));
+
+        if (empty($ids)) {
+            $this->addFlash('warning', 'Aucune action sélectionnée.');
+            return $this->redirectToRoute('app_actions_inactif');
+        }
+
+        $count = 0;
+        foreach ($actionsRepository->findBy(['id' => $ids]) as $action) {
+            if (!$action->isActif()) {
+                $action->setActif(true);
+                $action->setDateDesactivation(null);
+                $count++;
+            }
+        }
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('%d action(s) réactivée(s).', $count));
+        return $this->redirectToRoute('app_actions_inactif');
     }
 }

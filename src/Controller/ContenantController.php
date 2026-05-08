@@ -18,7 +18,15 @@ final class ContenantController extends AbstractController
     public function index(ContenantRepository $contenantRepository): Response
     {
         return $this->render('contenant/index.html.twig', [
-            'contenants' => $contenantRepository->findAll(),
+            'contenants' => $contenantRepository->findAllActif(),
+        ]);
+    }
+
+    #[Route('/inactif', name: 'app_contenant_inactif', methods: ['GET'])]
+    public function indexInactif(ContenantRepository $contenantRepository): Response
+    {
+        return $this->render('contenant/index_inactif.html.twig', [
+            'contenants' => $contenantRepository->findAllInactif(),
         ]);
     }
 
@@ -117,5 +125,83 @@ final class ContenantController extends AbstractController
         }
 
         return $this->redirectToRoute('app_contenant_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/toggle-actif', name: 'app_contenant_toggle_actif', methods: ['POST'])]
+    public function toggleActif(Request $request, Contenant $contenant, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle_actif'.$contenant->getId(), $request->getPayload()->getString('_token'))) {
+            $shouldDeactivate = $contenant->isActif();
+            $contenant->setActif(!$shouldDeactivate);
+            $now = new \DateTime();
+
+            if ($shouldDeactivate) {
+                $contenant->setDateDesactivation($now);
+                $nbMeo = 0;
+                $nbAct = 0;
+                foreach ($contenant->getMeoProduits() as $meo) {
+                    if ($meo->isActif()) {
+                        $meo->setActif(false);
+                        $meo->setDateDesactivation($now);
+                        $nbMeo++;
+                    }
+                    foreach ($meo->getActions() as $action) {
+                        if ($action->isActif()) {
+                            $action->setActif(false);
+                            $action->setDateDesactivation($now);
+                            $entityManager->persist($action);
+                            $nbAct++;
+                        }
+                    }
+                }
+                if ($nbAct > 0) {
+                    $this->addFlash('warning', sprintf(
+                        'Contenant désactivé. %d MEO produit(s) et %d action(s) liée(s) ont également été désactivé(e)s.',
+                        $nbMeo, $nbAct
+                    ));
+                } elseif ($nbMeo > 0) {
+                    $this->addFlash('success', sprintf('Contenant désactivé (%d MEO produit(s) désactivé(s)).', $nbMeo));
+                } else {
+                    $this->addFlash('success', 'Contenant désactivé.');
+                }
+            } else {
+                $contenant->setDateDesactivation(null);
+                $this->addFlash('success', 'Contenant réactivé.');
+            }
+
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_contenant_show', ['id' => $contenant->getId()], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/bulk/reactivate', name: 'app_contenant_bulk_reactivate', methods: ['POST'])]
+    public function bulkReactivate(Request $request, ContenantRepository $contenantRepository, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_reactivate_contenant', $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('app_contenant_inactif');
+        }
+
+        $ids = $request->getPayload()->all('ids');
+        $ids = array_filter(array_map('intval', is_array($ids) ? $ids : []));
+
+        if (empty($ids)) {
+            $this->addFlash('warning', 'Aucun contenant sélectionné.');
+            return $this->redirectToRoute('app_contenant_inactif');
+        }
+
+        $count = 0;
+        foreach ($contenantRepository->findBy(['id' => $ids]) as $contenant) {
+            if (!$contenant->isActif()) {
+                $contenant->setActif(true);
+                $contenant->setDateDesactivation(null);
+                $count++;
+            }
+        }
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('%d contenant(s) réactivé(s).', $count));
+        return $this->redirectToRoute('app_contenant_inactif');
     }
 }

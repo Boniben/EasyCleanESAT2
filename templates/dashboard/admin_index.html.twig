@@ -1,57 +1,242 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Dashboard Admin
-{% endblock %}
+{% block title %}Dashboard Admin{% endblock %}
 
 {% block body %}
-	<div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-		<a href="{{ path('app_logout') }}" class="btn btn-danger">Deconnexion</a>
-	</div>
+<style>
+    .admin-hero {
+        background: linear-gradient(135deg, #2c3e50 0%, #3d5a80 60%, #4a7aaa 100%);
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        color: #fff;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+    .admin-hero h1 {
+        color: #fff;
+        font-size: 2rem;
+        margin-bottom: 0.25rem;
+    }
+    .admin-hero p {
+        color: rgba(255,255,255,0.65);
+        margin: 0;
+        font-size: 1rem;
+    }
+    .admin-hero-icon {
+        font-size: 4rem;
+        line-height: 1;
+        opacity: 0.85;
+        flex-shrink: 0;
+    }
 
-	<section class="dashboard-hero">
-		<h1>Dashboard Administrateur</h1>
-		<p>Acces rapide aux espaces de gestion.</p>
-	</section>
+    .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.25rem;
+    }
 
-	<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-		<section style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 20px;">
-			<h2 style="margin: 0 0 8px; font-size: 1.2rem;">Necessaire</h2>
-			<p style="margin: 0 0 16px; color: #6b7280;">Acces direct a la gestion des necessaires.</p>
-			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-				<a href="{{ path('app_necessaire_index') }}" class="btn btn-outline-primary">Consulter les necessaires</a>
-			</div>
-		</section>
+    .admin-cat {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        overflow: hidden;
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .admin-cat:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
 
-		<section style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 20px;">
-			<h2 style="margin: 0 0 8px; font-size: 1.2rem;">Produit</h2>
-			<p style="margin: 0 0 16px; color: #6b7280;">Acces direct aux ecrans produits et dosage.</p>
-			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-				<a href="{{ path('app_produit_index') }}" class="btn btn-outline-primary">Produits</a>
-				<a href="{{ path('app_meo_produit_index') }}" class="btn btn-outline-primary">Meo produit</a>
-				<a href="{{ path('app_moyen_dosage_index') }}" class="btn btn-outline-primary">Moyen dosage</a>
-				<a href="{{ path('app_contenant_index') }}" class="btn btn-outline-primary">Contenants</a>
-				<a href="{{ path('app_temps_contact_index') }}" class="btn btn-outline-primary">Temps contact</a>
-			</div>
-		</section>
+    .admin-cat-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem 1rem;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    .admin-cat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+    }
+    .admin-cat-title {
+        font-family: var(--font-heading);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1e2028;
+        margin: 0 0 0.15rem;
+        letter-spacing: -0.01em;
+    }
+    .admin-cat-desc {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin: 0;
+        line-height: 1.4;
+    }
 
-		<section style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 20px;">
-			<h2 style="margin: 0 0 8px; font-size: 1.2rem;">Intervention</h2>
-			<p style="margin: 0 0 16px; color: #6b7280;">Acces direct a la gestion des interventions.</p>
-			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-				<a href="{{ path('app_intervention_index') }}" class="btn btn-outline-primary">Interventions</a>
-				<a href="{{ path('app_element_securite_index') }}" class="btn btn-outline-primary">Element securite</a>
-			</div>
-		</section>
+    .admin-cat-links {
+        padding: 1rem 1.5rem 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .admin-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1.5px solid;
+        transition: all 0.18s;
+    }
+    .admin-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    }
 
-		<section style="background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 20px;">
-			<h2 style="margin: 0 0 8px; font-size: 1.2rem;">Client</h2>
-			<p style="margin: 0 0 16px; color: #6b7280;">Acces direct aux donnees clients et contrats.</p>
-			<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-				<a href="{{ path('app_client_index') }}" class="btn btn-outline-primary">Clients</a>
-				<a href="{{ path('app_contrat_index') }}" class="btn btn-outline-primary">Contrats</a>
-				<a href="{{ path('app_zones_client_index') }}" class="btn btn-outline-primary">Zones</a>
-				<a href="{{ path('app_support_client_index') }}" class="btn btn-outline-primary">Supports</a>
-			</div>
-		</section>
-	</div>
+    /* Couleurs par catégorie */
+    .cat-blue  .admin-cat-icon { background: #dce9f8; }
+    .cat-green .admin-cat-icon { background: #d4edda; }
+    .cat-purple .admin-cat-icon { background: #e8d8f5; }
+    .cat-orange .admin-cat-icon { background: #fde8d0; }
+    .cat-red   .admin-cat-icon { background: #fbd8d8; }
+    .cat-teal  .admin-cat-icon { background: #d0f0ed; }
+
+    .cat-blue  .admin-link { color: #2563ab; border-color: #bdd3f0; background: #f0f6ff; }
+    .cat-blue  .admin-link:hover { background: #2563ab; color: #fff; border-color: #2563ab; }
+
+    .cat-green .admin-link { color: #1a7a45; border-color: #b3dfc4; background: #f0faf4; }
+    .cat-green .admin-link:hover { background: #1a7a45; color: #fff; border-color: #1a7a45; }
+
+    .cat-purple .admin-link { color: #7c3aed; border-color: #d5b8f5; background: #f8f0ff; }
+    .cat-purple .admin-link:hover { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+
+    .cat-orange .admin-link { color: #c2610a; border-color: #f7c99a; background: #fff8f0; }
+    .cat-orange .admin-link:hover { background: #c2610a; color: #fff; border-color: #c2610a; }
+
+    .cat-red .admin-link { color: #b91c1c; border-color: #f5b8b8; background: #fff5f5; }
+    .cat-red .admin-link:hover { background: #b91c1c; color: #fff; border-color: #b91c1c; }
+
+    .cat-teal .admin-link { color: #0f766e; border-color: #99ddd8; background: #f0fdfb; }
+    .cat-teal .admin-link:hover { background: #0f766e; color: #fff; border-color: #0f766e; }
+</style>
+
+{# ── Hero ── #}
+<div class="admin-hero">
+    <div>
+        <h1>Bonjour, Admin 👋</h1>
+        <p>Bienvenue sur le tableau de bord EasyCleanESAT.<br>Accès rapide à tous les modules de gestion.</p>
+    </div>
+    <div class="admin-hero-icon">🧹</div>
+</div>
+
+{# ── Grille de catégories ── #}
+<div class="admin-grid">
+
+    {# Clients & Contrats #}
+    <div class="admin-cat cat-blue">
+        <div class="admin-cat-header">
+            <div class="admin-cat-icon">🏢</div>
+            <div>
+                <div class="admin-cat-title">Clients & Contrats</div>
+                <div class="admin-cat-desc">Gestion des clients, sites, contrats, zones et supports</div>
+            </div>
+        </div>
+        <div class="admin-cat-links">
+            <a href="{{ path('app_client_index') }}" class="admin-link">👤 Clients</a>
+            <a href="{{ path('app_contrat_index') }}" class="admin-link">📄 Contrats</a>
+            <a href="{{ path('app_zones_client_index') }}" class="admin-link">🗺️ Zones</a>
+            <a href="{{ path('app_support_client_index') }}" class="admin-link">🪣 Supports</a>
+        </div>
+    </div>
+
+    {# Interventions #}
+    <div class="admin-cat cat-green">
+        <div class="admin-cat-header">
+            <div class="admin-cat-icon">📋</div>
+            <div>
+                <div class="admin-cat-title">Interventions</div>
+                <div class="admin-cat-desc">Fiches d'intervention et éléments de sécurité</div>
+            </div>
+        </div>
+        <div class="admin-cat-links">
+            <a href="{{ path('app_intervention_index') }}" class="admin-link">📋 Interventions</a>
+            <a href="{{ path('app_element_securite_index') }}" class="admin-link">🦺 Éléments de sécurité</a>
+        </div>
+    </div>
+
+    {# Nécessaires #}
+    <div class="admin-cat cat-orange">
+        <div class="admin-cat-header">
+            <div class="admin-cat-icon">🧹</div>
+            <div>
+                <div class="admin-cat-title">Nécessaires</div>
+                <div class="admin-cat-desc">Matériels, accessoires, consommables et tâches</div>
+            </div>
+        </div>
+        <div class="admin-cat-links">
+            <a href="{{ path('app_necessaire_index') }}" class="admin-link">🧹 Nécessaires</a>
+            <a href="{{ path('app_actions_index') }}" class="admin-link">⚙️ Actions</a>
+        </div>
+    </div>
+
+    {# Produits & Dosage #}
+    <div class="admin-cat cat-purple">
+        <div class="admin-cat-header">
+            <div class="admin-cat-icon">🧪</div>
+            <div>
+                <div class="admin-cat-title">Produits & Dosage</div>
+                <div class="admin-cat-desc">Produits, MEO, dosages, contenants et temps de contact</div>
+            </div>
+        </div>
+        <div class="admin-cat-links">
+            <a href="{{ path('app_produit_index') }}" class="admin-link">🧴 Produits</a>
+            <a href="{{ path('app_meo_produit_index') }}" class="admin-link">⚗️ MEO Produit</a>
+            <a href="{{ path('app_moyen_dosage_index') }}" class="admin-link">💧 Moyen dosage</a>
+            <a href="{{ path('app_contenant_index') }}" class="admin-link">🪣 Contenants</a>
+            <a href="{{ path('app_temps_contact_index') }}" class="admin-link">⏱️ Temps contact</a>
+        </div>
+    </div>
+
+    {# Vigilances #}
+    <div class="admin-cat cat-red">
+        <div class="admin-cat-header">
+            <div class="admin-cat-icon">⚠️</div>
+            <div>
+                <div class="admin-cat-title">Vigilances</div>
+                <div class="admin-cat-desc">Points de vigilance associés aux interventions</div>
+            </div>
+        </div>
+        <div class="admin-cat-links">
+            <a href="{{ path('app_vigilance_index') }}" class="admin-link">⚠️ Vigilances</a>
+        </div>
+    </div>
+
+    {# Référentiels #}
+    <div class="admin-cat cat-teal">
+        <div class="admin-cat-header">
+            <div class="admin-cat-icon">⚙️</div>
+            <div>
+                <div class="admin-cat-title">Référentiels</div>
+                <div class="admin-cat-desc">Types de zones, supports, nécessaires et utilisateurs</div>
+            </div>
+        </div>
+        <div class="admin-cat-links">
+            <a href="{{ path('app_type_zone_index') }}" class="admin-link">🗺️ Types de zone</a>
+            <a href="{{ path('app_type_support_index') }}" class="admin-link">🪣 Types de support</a>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

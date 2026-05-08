@@ -16,28 +16,23 @@ class ElementSecuriteRepository extends ServiceEntityRepository
         parent::__construct($registry, ElementSecurite::class);
     }
 
-    //    /**
-    //     * @return ElementSecurite[] Returns an array of ElementSecurite objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('e.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?ElementSecurite
-    //    {
-    //        return $this->createQueryBuilder('e')
-    //            ->andWhere('e.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Retourne un tableau code => nom lisible depuis la table necessaire.
+     * @return array<string, string>
+     */
+    public function findNomMap(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = '
+            SELECT e.nom AS code, COALESCE(n.nom, e.nom) AS label
+            FROM element_securite e
+            LEFT JOIN necessaire n ON n.code = e.nom
+        ';
+        $rows = $conn->fetchAllAssociative($sql);
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row['code']] = $row['label'];
+        }
+        return $map;
+    }
 }

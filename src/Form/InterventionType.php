@@ -56,8 +56,10 @@ class InterventionType extends AbstractType
                 $sitesClient = $zonesClient->getSitesClient();
                 if ($sitesClient) {
                     $client = $sitesClient->getClient();
-                    // Récupérer le premier contrat du site si disponible
-                    if ($sitesClient->getContrats()->count() > 0) {
+                    // Utiliser le contrat_id passé en paramètre si disponible, sinon le premier du site
+                    if ($contratId) {
+                        $contrat = $em->getRepository(Contrat::class)->find($contratId);
+                    } elseif ($sitesClient->getContrats()->count() > 0) {
                         $contrat = $sitesClient->getContrats()->first();
                     }
                 }
@@ -90,9 +92,12 @@ class InterventionType extends AbstractType
                 'class' => Client::class,
                 'choice_label' => 'nom',
                 'placeholder' => 'Sélectionnez un client',
-                'mapped' => false, 
+                'mapped' => false,
                 'required' => true,
                 'data' => $client,
+                'choice_attr' => function (Client $c) {
+                    return $c->getPicto() ? ['data-picto' => $c->getPicto()] : [];
+                },
                 'query_builder' => function (EntityRepository $er) use ($client) {
                     $qb = $er->createQueryBuilder('c');
                     if ($client) {
@@ -196,12 +201,6 @@ class InterventionType extends AbstractType
             ->add('dureeMinute', IntegerType::class, [
                 'attr' => ['min' => 0, 'max' => 59],
                 'constraints' => [new Range(['min' => 0, 'max' => 59])],
-            ])
-            ->add('elementSecurites', EntityType::class, [
-                'class' => ElementSecurite::class,
-                'choice_label' => 'nom',
-                'multiple' => true,
-                'required' => false,
             ])
         ;
     }

@@ -27,16 +27,19 @@ class Actions
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
     private ?bool $actif = true;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateDesactivation = null;
+
     /**
-     * @var Collection<int, SuppInter>
+     * @var Collection<int, SuppInterActions>
      */
-    #[ORM\ManyToMany(targetEntity: SuppInter::class, mappedBy: 'actions')]
-    private Collection $suppInters;
+    #[ORM\OneToMany(targetEntity: SuppInterActions::class, mappedBy: 'action', cascade: ['remove'], orphanRemoval: true)]
+    private Collection $suppInterActions;
 
     public function __construct()
     {
         $this->necessaire = new ArrayCollection();
-        $this->suppInters = new ArrayCollection();
+        $this->suppInterActions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -92,30 +95,36 @@ class Actions
         return $this;
     }
 
+    public function getDateDesactivation(): ?\DateTimeInterface
+    {
+        return $this->dateDesactivation;
+    }
+
+    public function setDateDesactivation(?\DateTimeInterface $dateDesactivation): static
+    {
+        $this->dateDesactivation = $dateDesactivation;
+        return $this;
+    }
+
     /**
-     * @return Collection<int, SuppInter>
+     * @return Collection<int, SuppInterActions>
      */
-    public function getSuppInters(): Collection
+    public function getSuppInterActions(): Collection
     {
-        return $this->suppInters;
+        return $this->suppInterActions;
     }
 
-    public function addSuppInter(SuppInter $suppInter): static
+    /**
+     * Retourne le libellé lisible de l'action : nom de la nécessaire de
+     * type "tâche" (typeNecessaire id = 4). Fallback : "Action #id".
+     */
+    public function getLabel(): string
     {
-        if (!$this->suppInters->contains($suppInter)) {
-            $this->suppInters->add($suppInter);
-            $suppInter->addAction($this);
+        foreach ($this->necessaire as $nec) {
+            if ($nec->getTypeNecessaire()?->getId() === 4) {
+                return (string) $nec->getNom();
+            }
         }
-
-        return $this;
-    }
-
-    public function removeSuppInter(SuppInter $suppInter): static
-    {
-        if ($this->suppInters->removeElement($suppInter)) {
-            $suppInter->removeAction($this);
-        }
-
-        return $this;
+        return 'Action #' . $this->id;
     }
 }

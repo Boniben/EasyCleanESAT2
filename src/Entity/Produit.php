@@ -33,9 +33,23 @@ class Produit
     #[ORM\Column]
     private ?bool $actif = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateDesactivation = null;
+
     public function __construct()
     {
         $this->meoProduits = new ArrayCollection();
+    }
+
+    public function getDateDesactivation(): ?\DateTimeInterface
+    {
+        return $this->dateDesactivation;
+    }
+
+    public function setDateDesactivation(?\DateTimeInterface $dateDesactivation): static
+    {
+        $this->dateDesactivation = $dateDesactivation;
+        return $this;
     }
 
     public function getId(): ?int

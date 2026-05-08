@@ -39,10 +39,12 @@ export default class extends Controller {
     // État interne
     allSupports = [];        // [{id, nom, type_support_id}] depuis l'API
     selectedSupports = [];   // [{supportClientId, orderPosition, nom}]
-    addedActions = [];       // [{actionsId, label, tache, necessaires, meo, suppInterPositions}]
+    addedActions = [];       // [{actionsId, label, tache, necessaires, meo, suppInterPositions, orderPosition}]
     activeFilters = [];      // codes de nécessaires actifs (ex: ['t.3', 'SUP.1'])
     dragSrcId = null;
     isDragging = false;
+    dragActionSrcPos = null;
+    isDraggingAction = false;
 
     connect() {
         // Pré-charger les données en mode édition
@@ -55,7 +57,7 @@ export default class extends Controller {
                     orderPosition: s.order_position,
                     nom: s.nom || '',
                 }));
-                this.addedActions = (parsed.actions || []).map(a => {
+                this.addedActions = (parsed.actions || []).map((a, idx) => {
                     const full = this.actionsValue.find(av => av.id === a.actionsId) || {};
                     return {
                         actionsId: a.actionsId,
@@ -64,6 +66,8 @@ export default class extends Controller {
                         necessaires: full.necessaires || a.necessaires || [],
                         meo: full.meo || a.meo || null,
                         suppInterPositions: [...(a.suppInterPositions || [])],
+                        orderPosition: a.orderPosition || (idx + 1),
+                        frequence: a.frequence || '',
                     };
                 });
             } catch (e) {
@@ -153,15 +157,26 @@ export default class extends Controller {
         const card = document.createElement('div');
         card.className = 'tile-item supp-card' + (selected ? ' selected' : '');
         card.dataset.supportId = support.id;
+        card.style.cssText += 'display:flex;flex-direction:column;align-items:center;gap:0.3rem;padding:0.5rem;';
+
+        if (support.picto) {
+            const img = document.createElement('img');
+            img.src = '/easycleanesat/public/PictoTypeSupportPNG/' + support.picto;
+            img.alt = support.nom;
+            img.style.cssText = 'width:40px;height:40px;object-fit:contain;pointer-events:none;';
+            img.onerror = () => { img.style.display = 'none'; };
+            card.appendChild(img);
+        }
 
         const nameSpan = document.createElement('span');
         nameSpan.textContent = support.nom;
+        nameSpan.style.cssText = 'font-size:0.78rem;text-align:center;';
         card.appendChild(nameSpan);
 
         if (selected && position !== null) {
             const badge = document.createElement('span');
             badge.className = 'supp-position-badge';
-            badge.textContent = 'Pos. ' + position;
+            badge.textContent = position;
             card.appendChild(badge);
 
             card.setAttribute('draggable', 'true');
@@ -450,24 +465,30 @@ export default class extends Controller {
         this.showDropdown(filtered);
     }
 
-    onActionSearchFocus() {
+    onActionSearch() {
         const query = this.hasActionSearchTarget ? this.actionSearchTarget.value.toLowerCase().trim() : '';
         this._applySearch(query);
     }
 
-    onActionSearchInput(event) {
-        const query = event.target.value.toLowerCase().trim();
-        this._applySearch(query);
-    }
-
-    onActionSearchBlur() {
-        // Délai pour permettre le clic sur un item du dropdown
-        setTimeout(() => this.hideDropdown(), 200);
+    onActionSearchKeydown(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.onActionSearch();
+        }
     }
 
     showDropdown(actions) {
         const dropdown = this.actionDropdownTarget;
         dropdown.innerHTML = '';
+
+        // Bouton de fermeture (croix rouge en haut à droite)
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'action-dropdown-close';
+        closeBtn.title = 'Fermer';
+        closeBtn.textContent = '✕';
+        closeBtn.addEventListener('click', () => this.hideDropdown());
+        dropdown.appendChild(closeBtn);
 
         if (actions.length === 0) {
             const empty = document.createElement('div');
@@ -483,11 +504,8 @@ export default class extends Controller {
                 item.className = 'action-dropdown-picto-item';
                 item.title = action.label;
                 item.appendChild(this._buildPictoCard(action));
-                item.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
+                item.addEventListener('click', () => {
                     this.addAction(action);
-                    this.actionSearchTarget.value = '';
-                    this.hideDropdown();
                 });
                 grid.appendChild(item);
             });
@@ -506,6 +524,7 @@ export default class extends Controller {
 
     addAction(action) {
         if (this.addedActions.some(a => a.actionsId === action.id)) return;
+        const newPos = this.addedActions.length + 1;
         this.addedActions.push({
             actionsId: action.id,
             label: action.label,
@@ -513,7 +532,12 @@ export default class extends Controller {
             necessaires: action.necessaires || [],
             meo: action.meo || null,
             suppInterPositions: [],
+            orderPosition: newPos,
+            frequence: '',
         });
+        // Vider la recherche et fermer le dropdown
+        if (this.hasActionSearchTarget) this.actionSearchTarget.value = '';
+        this.hideDropdown();
         // Réinitialiser les filtres après sélection d'une action
         this.activeFilters = [];
         this.renderFilterSelects();
@@ -523,6 +547,9 @@ export default class extends Controller {
 
     removeAction(actionsId) {
         this.addedActions = this.addedActions.filter(a => a.actionsId !== actionsId);
+        // Renuméroter
+        this.addedActions.sort((a, b) => a.orderPosition - b.orderPosition);
+        this.addedActions.forEach((a, i) => { a.orderPosition = i + 1; });
         this.renderActionsList();
         this.serialize();
     }
@@ -551,15 +578,23 @@ export default class extends Controller {
         }
 
         const sortedSelected = [...this.selectedSupports].sort((a, b) => a.orderPosition - b.orderPosition);
+        const sortedActions = [...this.addedActions].sort((a, b) => a.orderPosition - b.orderPosition);
 
-        this.addedActions.forEach(action => {
+        sortedActions.forEach(action => {
             const row = document.createElement('div');
             row.className = 'action-row';
+            row.dataset.actionId = action.actionsId;
+            row.setAttribute('draggable', 'true');
+
+            // Poignée de drag + badge numéro
+            const dragHandle = document.createElement('div');
+            dragHandle.className = 'action-drag-handle';
+            dragHandle.innerHTML = `<span class="action-order-badge">${action.orderPosition}</span><span class="drag-dots">⠿</span>`;
+            row.appendChild(dragHandle);
 
             // En-tête de l'action : carte picto
             const header = document.createElement('div');
             header.className = 'action-row-header';
-
             header.appendChild(this._buildPictoCard(action));
 
             const removeBtn = document.createElement('button');
@@ -592,13 +627,87 @@ export default class extends Controller {
                 });
 
                 label.appendChild(cb);
-                label.appendChild(document.createTextNode(' ' + sel.nom + ' (pos.' + sel.orderPosition + ')'));
+                const txt = document.createElement('span');
+                txt.textContent = sel.nom;
+                label.appendChild(txt);
                 checksDiv.appendChild(label);
             });
 
             row.appendChild(checksDiv);
+
+            // Champ fréquence
+            const freqDiv = document.createElement('div');
+            freqDiv.className = 'action-frequence-wrap';
+
+            const freqInput = document.createElement('input');
+            freqInput.type = 'text';
+            freqInput.className = 'action-frequence-input';
+            freqInput.placeholder = 'Fréquence (ex: 1 fois/mois)';
+            freqInput.value = action.frequence || '';
+            freqInput.addEventListener('input', (e) => {
+                action.frequence = e.target.value;
+                this.serialize();
+            });
+            freqDiv.appendChild(freqInput);
+            row.appendChild(freqDiv);
+
+            // Drag & drop handlers
+            row.addEventListener('dragstart', this._onActionDragStart.bind(this));
+            row.addEventListener('dragover', this._onActionDragOver.bind(this));
+            row.addEventListener('dragleave', this._onActionDragLeave.bind(this));
+            row.addEventListener('drop', this._onActionDrop.bind(this));
+            row.addEventListener('dragend', this._onActionDragEnd.bind(this));
+
             list.appendChild(row);
         });
+    }
+
+    // ─── Drag-and-drop actions ──────────────────────────────────────────────────
+
+    _onActionDragStart(event) {
+        this.isDraggingAction = true;
+        this.dragActionSrcPos = parseInt(event.currentTarget.dataset.actionId);
+        event.dataTransfer.effectAllowed = 'move';
+        event.currentTarget.classList.add('action-dragging');
+    }
+
+    _onActionDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        event.currentTarget.classList.add('action-drag-over');
+    }
+
+    _onActionDragLeave(event) {
+        event.currentTarget.classList.remove('action-drag-over');
+    }
+
+    _onActionDrop(event) {
+        event.stopPropagation();
+        const targetEl = event.currentTarget;
+        targetEl.classList.remove('action-drag-over');
+
+        const tgtId = parseInt(targetEl.dataset.actionId);
+        if (this.dragActionSrcPos === tgtId) return;
+
+        const srcIdx = this.addedActions.findIndex(a => a.actionsId === this.dragActionSrcPos);
+        const tgtIdx = this.addedActions.findIndex(a => a.actionsId === tgtId);
+        if (srcIdx < 0 || tgtIdx < 0) return;
+
+        // Échanger les positions
+        const srcPos = this.addedActions[srcIdx].orderPosition;
+        const tgtPos = this.addedActions[tgtIdx].orderPosition;
+        this.addedActions[srcIdx].orderPosition = tgtPos;
+        this.addedActions[tgtIdx].orderPosition = srcPos;
+
+        this.renderActionsList();
+        this.serialize();
+    }
+
+    _onActionDragEnd(event) {
+        event.currentTarget.classList.remove('action-dragging');
+        event.currentTarget.classList.remove('action-drag-over');
+        setTimeout(() => { this.isDraggingAction = false; }, 50);
+        this.dragActionSrcPos = null;
     }
 
     // ─── Rendu carte picto action ───────────────────────────────────────────────
@@ -630,24 +739,44 @@ export default class extends Controller {
         }
         card.appendChild(top);
 
-        // Section basse : grille nécessaires + carte MEO
+        // Section basse : 4 slots fixes (matériel/réutilisable/accessoire/consommable) + carte MEO
         const bottom = document.createElement('div');
         bottom.className = 'action-picto-bottom';
 
+        // Catégoriser les nécessaires par type_id (1=matériel, 2=réutilisable, 3=accessoire, 6=consommable)
+        const slots = { 1: null, 2: null, 3: null, 6: null };
+        (action.necessaires || []).forEach(nec => {
+            if (slots.hasOwnProperty(nec.type_id) && slots[nec.type_id] === null) {
+                slots[nec.type_id] = nec;
+            }
+        });
+
         const grid = document.createElement('div');
         grid.className = 'action-picto-grid';
-        (action.necessaires || []).forEach(nec => {
-            const filename = nec.type_nom === 'consommable' ? '_' + nec.code : nec.code;
-            const img = document.createElement('img');
-            img.src = this.pictoUrlValue + filename + '.png';
-            img.onerror = () => { img.style.display = 'none'; };
-            img.className = 'action-picto-nec-img';
-            grid.appendChild(img);
+        [1, 2, 3, 6].forEach(typeId => {
+            const cell = document.createElement('div');
+            cell.className = 'action-picto-nec-cell';
+            const nec = slots[typeId];
+            if (nec) {
+                const filename = typeId === 6 ? '_' + nec.code : nec.code;
+                const img = document.createElement('img');
+                img.src = this.pictoUrlValue + filename + '.png';
+                img.onerror = () => { img.style.display = 'none'; };
+                img.alt = nec.nom || '';
+                cell.appendChild(img);
+            }
+            grid.appendChild(cell);
         });
         bottom.appendChild(grid);
 
-        if (action.meo && action.meo.produit_code && action.meo.produit_code !== 'P.00') {
+        // Carte MEO toujours présente (vide si pas de produit réel)
+        const hasRealMeo = action.meo && action.meo.produit_code && action.meo.produit_code !== 'P.00';
+        if (hasRealMeo) {
             bottom.appendChild(this._buildMeoCard(action.meo));
+        } else {
+            const emptyMeo = document.createElement('div');
+            emptyMeo.className = 'action-picto-meo-empty';
+            bottom.appendChild(emptyMeo);
         }
 
         card.appendChild(bottom);
@@ -668,36 +797,37 @@ export default class extends Controller {
         }
 
         const div = document.createElement('div');
-        div.style.cssText = 'margin-left:6px;width:70px;border:1px solid #4b5563;border-radius:4px;overflow:hidden;background:#fff;flex-shrink:0;';
+        div.className = 'action-picto-meo';
+        div.style.background = '#fff';
 
         const contenantImg = meo.contenant_id
-            ? `<img src="${this.contenantUrlValue}${meo.contenant_id}.png" onerror="this.style.display='none'" style="max-width:20px;max-height:20px;">`
+            ? `<img src="${this.contenantUrlValue}${meo.contenant_id}.png" onerror="this.style.display='none'" style="max-width:16px;max-height:16px;">`
             : '';
         const moyenImg = meo.moyen_dosage_id
-            ? `<img src="${this.moyenDosageUrlValue}${meo.moyen_dosage_id}.png" onerror="this.style.display='none'" style="max-width:24px;max-height:24px;">`
+            ? `<img src="${this.moyenDosageUrlValue}${meo.moyen_dosage_id}.png" onerror="this.style.display='none'" style="max-width:20px;max-height:20px;">`
             : '';
         const tcImg = meo.temps_contact_id
-            ? `<img src="${this.tempsContactUrlValue}${meo.temps_contact_id}.png" onerror="this.style.display='none'" style="max-width:19px;max-height:19px;">`
+            ? `<img src="${this.tempsContactUrlValue}${meo.temps_contact_id}.png" onerror="this.style.display='none'" style="max-width:16px;max-height:16px;">`
             : '';
 
         div.innerHTML = `
             <div style="display:flex;">
-                <div style="width:50%;padding:4px;border-right:1px solid #4b5563;background:${bg};display:flex;flex-direction:column;justify-content:space-between;align-items:center;">
+                <div style="width:50%;padding:2px;border-right:1px solid #4b5563;background:${bg};display:flex;flex-direction:column;justify-content:space-between;align-items:center;">
                     ${contenantImg}
-                    <span style="font-size:8px;font-weight:700;text-align:center;color:#111;">${meo.produit_code || ''}${meo.moyen_dosage_code ? '.' + meo.moyen_dosage_code : ''}</span>
+                    <span style="font-size:7px;font-weight:700;text-align:center;color:#111;line-height:1;">${meo.produit_code || ''}${meo.moyen_dosage_code ? '.' + meo.moyen_dosage_code : ''}</span>
                 </div>
-                <div style="width:50%;padding:4px;display:flex;flex-direction:column;justify-content:center;align-items:center;">
-                    <span style="font-size:7px;color:#6b7280;">Eau</span>
-                    <span style="font-size:8px;font-weight:700;">${meo.volume_eau || ''}</span>
+                <div style="width:50%;padding:2px;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+                    <span style="font-size:6px;color:#6b7280;line-height:1;">Eau</span>
+                    <span style="font-size:7px;font-weight:700;line-height:1;">${meo.volume_eau || ''}</span>
                 </div>
             </div>
             <div style="display:flex;border-top:1px solid #4b5563;">
-                <div style="width:50%;padding:4px;border-right:1px solid #4b5563;display:flex;align-items:center;justify-content:center;">${moyenImg}</div>
+                <div style="width:50%;padding:2px;border-right:1px solid #4b5563;display:flex;align-items:center;justify-content:center;">${moyenImg}</div>
                 <div style="width:50%;display:flex;flex-direction:column;">
-                    <div style="flex:1;padding:4px;display:flex;align-items:center;justify-content:center;">
-                        <span style="font-size:8px;font-weight:700;">${meo.volume_produit != null ? meo.volume_produit : ''}</span>
+                    <div style="flex:1;padding:2px;display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:7px;font-weight:700;line-height:1;">${meo.volume_produit != null ? meo.volume_produit : ''}</span>
                     </div>
-                    <div style="flex:1;padding:4px;display:flex;align-items:center;justify-content:center;">${tcImg}</div>
+                    <div style="flex:1;padding:2px;display:flex;align-items:center;justify-content:center;">${tcImg}</div>
                 </div>
             </div>`;
         return div;
@@ -715,10 +845,14 @@ export default class extends Controller {
                     support_client_id: s.supportClientId,
                     order_position: s.orderPosition,
                 })),
-            actions: this.addedActions.map(a => ({
-                actions_id: a.actionsId,
-                supp_inter_positions: [...a.suppInterPositions],
-            })),
+            actions: [...this.addedActions]
+                .sort((a, b) => a.orderPosition - b.orderPosition)
+                .map(a => ({
+                    actions_id: a.actionsId,
+                    ordre: a.orderPosition,
+                    frequence: a.frequence || null,
+                    supp_inter_positions: [...a.suppInterPositions],
+                })),
         };
 
         this.hiddenDataTarget.value = JSON.stringify(data);

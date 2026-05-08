@@ -179,6 +179,284 @@
         .accueil-hero { padding: 2rem 1.5rem; }
         .accueil-hero__app-name { font-size: 1.8rem; }
     }
+
+    /* ============================================================
+       SECTION PRÉSENTATION — Hiérarchie + exemple fiche
+       ============================================================ */
+    .presentation-section {
+        max-width: 1100px;
+        width: 100%;
+        margin-top: 4rem;
+        background: white;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem 2rem;
+        box-shadow: 0 4px 24px rgba(61,90,128,0.08);
+    }
+    .presentation-title {
+        font-family: var(--font-heading);
+        text-align: center;
+        font-size: 1.7rem;
+        color: var(--color-primary);
+        margin: 0 0 0.4rem 0;
+        letter-spacing: -0.02em;
+    }
+    .presentation-subtitle {
+        text-align: center;
+        color: var(--color-text-secondary);
+        margin: 0 0 2rem 0;
+        font-size: 0.95rem;
+    }
+
+    /* ---- Flow de hiérarchie ---- */
+    .hierarchy-flow {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 2.5rem;
+    }
+    .hierarchy-step {
+        flex: 1 1 150px;
+        min-width: 130px;
+        max-width: 180px;
+        background: linear-gradient(180deg, #f5f9fc, #e9f0f7);
+        border: 2px solid #c6d4e3;
+        border-radius: 12px;
+        padding: 1rem 0.75rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        transition: transform 0.2s;
+    }
+    .hierarchy-step:hover { transform: translateY(-3px); }
+    .hierarchy-step.is-final {
+        background: linear-gradient(180deg, #fff4d6, #ffe6a8);
+        border-color: #f0b73b;
+    }
+    .hierarchy-icon {
+        font-size: 2rem;
+        line-height: 1;
+    }
+    .hierarchy-label {
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: var(--color-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .hierarchy-step.is-final .hierarchy-label { color: #8a5a00; }
+    .hierarchy-example {
+        font-size: 0.78rem;
+        color: var(--color-text-secondary);
+        line-height: 1.3;
+        font-style: italic;
+    }
+    .hierarchy-arrow {
+        display: flex;
+        align-items: center;
+        font-size: 1.4rem;
+        color: #8aa4be;
+        font-weight: 700;
+    }
+    @media (max-width: 700px) {
+        .hierarchy-arrow { transform: rotate(90deg); }
+        .hierarchy-flow { flex-direction: column; align-items: center; }
+        .hierarchy-step { width: 100%; max-width: 280px; }
+    }
+
+    /* ---- Mini-fiche d'exemple ---- */
+    .example-fiche-wrap {
+        background: linear-gradient(180deg, #fafbfc, #f1f4f8);
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    .example-fiche-title {
+        text-align: center;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+    .example-fiche {
+        background: white;
+        border: 2px solid #444;
+        max-width: 720px;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        color: #111;
+    }
+    /* Bandeau en-tête */
+    .ex-header {
+        display: grid;
+        grid-template-columns: 130px 1fr 130px;
+        border-bottom: 2px solid #444;
+    }
+    .ex-titre {
+        background: #B4C6E7;
+        font-weight: 900;
+        text-align: center;
+        padding: 12px 6px;
+        border-right: 2px solid #444;
+        font-size: 12px;
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .ex-client {
+        background: #B4C6E7;
+        text-align: center;
+        padding: 8px;
+        border-right: 2px solid #444;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+    }
+    .ex-client-lbl { font-size: 9px; font-style: italic; color: #444; }
+    .ex-client-nom { font-size: 18px; font-weight: 900; color: #111; }
+    .ex-photo {
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: #aaa;
+        font-style: italic;
+    }
+    /* Lignes infos */
+    .ex-infos {
+        display: grid;
+        grid-template-columns: 130px 1fr;
+        border-bottom: 1px solid #888;
+    }
+    .ex-info-row {
+        display: contents;
+    }
+    .ex-info-row > div {
+        padding: 4px 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    .ex-info-row > div:first-child {
+        background: #D9EAD3;
+        font-size: 9px;
+        color: #333;
+        border-right: 1px solid #aaa;
+    }
+    .ex-info-row > div:last-child { font-weight: 700; }
+    /* Bandeau zone */
+    .ex-zone {
+        background: #E2EFD9;
+        text-align: center;
+        padding: 10px;
+        border-bottom: 1px solid #888;
+    }
+    .ex-zone-lbl { font-size: 9px; font-style: italic; color: #555; display: block; margin-bottom: 3px; }
+    .ex-zone-nom { font-size: 14px; font-weight: 900; }
+    /* Schéma supports */
+    .ex-supports {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        padding: 10px;
+        background: #fff;
+        border-bottom: 2px solid #444;
+    }
+    .ex-support {
+        border: 1px solid #bbb;
+        border-radius: 4px;
+        padding: 6px 4px;
+        text-align: center;
+        background: #fafbfc;
+    }
+    .ex-support-icon {
+        font-size: 1.4rem;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+    .ex-support-lbl {
+        font-size: 9px;
+        color: #555;
+        font-weight: 600;
+    }
+    .ex-support-num {
+        display: inline-block;
+        background: #1a0050;
+        color: white;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+        font-size: 9px;
+        font-weight: 900;
+        margin-top: 2px;
+    }
+    /* Cartes actions */
+    .ex-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 10px;
+        background: #fafafa;
+    }
+    .ex-action {
+        border: 1.5px solid #333;
+        border-radius: 3px;
+        background: white;
+        padding: 6px;
+        font-size: 9px;
+        text-align: center;
+    }
+    .ex-action-num {
+        display: inline-block;
+        background: #e00;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        font-weight: 900;
+    }
+    .ex-action-name {
+        font-weight: 800;
+        text-transform: uppercase;
+        margin: 4px 0;
+        font-size: 9px;
+    }
+    .ex-action-tags {
+        display: flex;
+        gap: 3px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .ex-action-tag {
+        background: #eef2f7;
+        border: 1px solid #c6d4e3;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 8px;
+    }
+    .ex-caption {
+        text-align: center;
+        font-size: 0.82rem;
+        color: var(--color-text-secondary);
+        margin-top: 1rem;
+        font-style: italic;
+        line-height: 1.5;
+    }
+    @media (max-width: 700px) {
+        .ex-header { grid-template-columns: 1fr; }
+        .ex-titre, .ex-client { border-right: none; border-bottom: 1px solid #888; }
+        .ex-photo { display: none; }
+        .ex-supports { grid-template-columns: repeat(2, 1fr); }
+        .ex-actions { grid-template-columns: 1fr; }
+    }
     </style>
 {% endblock %}
 
@@ -232,6 +510,138 @@
             </a>
         {% endif %}
 
+    </div>
+
+    {# ============================================================
+       SECTION PRÉSENTATION
+       ============================================================ #}
+    <div class="presentation-section">
+        <h2 class="presentation-title">Comment ça fonctionne ?</h2>
+        <p class="presentation-subtitle">
+            EasyClean<strong>ESAT</strong> structure vos chantiers d'entretien selon une hiérarchie simple :
+        </p>
+
+        {# ---- Flow hiérarchique ---- #}
+        <div class="hierarchy-flow">
+
+            <div class="hierarchy-step">
+                <div class="hierarchy-icon">👤</div>
+                <div class="hierarchy-label">Client</div>
+                <div class="hierarchy-example">Hôpital Saint-Jean</div>
+            </div>
+            <div class="hierarchy-arrow">→</div>
+
+            <div class="hierarchy-step">
+                <div class="hierarchy-icon">🏢</div>
+                <div class="hierarchy-label">Site</div>
+                <div class="hierarchy-example">Bâtiment principal</div>
+            </div>
+            <div class="hierarchy-arrow">→</div>
+
+            <div class="hierarchy-step">
+                <div class="hierarchy-icon">📍</div>
+                <div class="hierarchy-label">Zone</div>
+                <div class="hierarchy-example">Sanitaires RDC</div>
+            </div>
+            <div class="hierarchy-arrow">→</div>
+
+            <div class="hierarchy-step">
+                <div class="hierarchy-icon">🪣</div>
+                <div class="hierarchy-label">Supports</div>
+                <div class="hierarchy-example">WC, lavabo, miroir, sol…</div>
+            </div>
+            <div class="hierarchy-arrow">→</div>
+
+            <div class="hierarchy-step is-final">
+                <div class="hierarchy-icon">📋</div>
+                <div class="hierarchy-label">Fiche d'intervention</div>
+                <div class="hierarchy-example">Le mode opératoire complet</div>
+            </div>
+
+        </div>
+
+        {# ---- Mini fiche d'exemple ---- #}
+        <div class="example-fiche-wrap">
+            <div class="example-fiche-title">📋 Aperçu d'une fiche d'intervention générée</div>
+
+            <div class="example-fiche">
+
+                {# En-tête #}
+                <div class="ex-header">
+                    <div class="ex-titre">FICHE<br>INTERVENTION</div>
+                    <div class="ex-client">
+                        <span class="ex-client-lbl">Client :</span>
+                        <span class="ex-client-nom">Hôpital Saint-Jean</span>
+                    </div>
+                    <div class="ex-photo">📷 Photo client</div>
+                </div>
+
+                {# Bandeau zone #}
+                <div class="ex-zone">
+                    <span class="ex-zone-lbl">Zone concernée :</span>
+                    <span class="ex-zone-nom">Sanitaires RDC — Bâtiment A</span>
+                </div>
+
+                {# Schéma des supports #}
+                <div class="ex-supports">
+                    <div class="ex-support">
+                        <div class="ex-support-icon">🚽</div>
+                        <div class="ex-support-lbl">WC</div>
+                        <div class="ex-support-num">1</div>
+                    </div>
+                    <div class="ex-support">
+                        <div class="ex-support-icon">🚰</div>
+                        <div class="ex-support-lbl">Lavabo</div>
+                        <div class="ex-support-num">2</div>
+                    </div>
+                    <div class="ex-support">
+                        <div class="ex-support-icon">🪞</div>
+                        <div class="ex-support-lbl">Miroir</div>
+                        <div class="ex-support-num">3</div>
+                    </div>
+                    <div class="ex-support">
+                        <div class="ex-support-icon">🧹</div>
+                        <div class="ex-support-lbl">Sol</div>
+                        <div class="ex-support-num">4</div>
+                    </div>
+                </div>
+
+                {# Cartes d'action #}
+                <div class="ex-actions">
+                    <div class="ex-action">
+                        <span class="ex-action-num">1</span>
+                        <div class="ex-action-name">Détartrer la cuvette</div>
+                        <div class="ex-action-tags">
+                            <span class="ex-action-tag">🧴 Détartrant</span>
+                            <span class="ex-action-tag">🧤 Gants</span>
+                        </div>
+                    </div>
+                    <div class="ex-action">
+                        <span class="ex-action-num">2</span>
+                        <div class="ex-action-name">Nettoyer le lavabo</div>
+                        <div class="ex-action-tags">
+                            <span class="ex-action-tag">🧽 Éponge</span>
+                            <span class="ex-action-tag">🧴 Multi-usage</span>
+                        </div>
+                    </div>
+                    <div class="ex-action">
+                        <span class="ex-action-num">3</span>
+                        <div class="ex-action-name">Lustrer le miroir</div>
+                        <div class="ex-action-tags">
+                            <span class="ex-action-tag">🧻 Microfibre</span>
+                            <span class="ex-action-tag">🧴 Vitres</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <p class="ex-caption">
+                Chaque <strong>intervention</strong> est rattachée à une <strong>zone</strong>,
+                liste les <strong>supports</strong> à entretenir et détaille les <strong>actions</strong>
+                à réaliser avec les produits, contenants et durées associés.
+            </p>
+        </div>
     </div>
 
 </div>

@@ -5,40 +5,80 @@
 {% block body %}
     <h1>Produit index - Désactivés</h1>
 
-    <div class="mb-3">
-        <a href="{{ path('app_produit_new') }}" class="btn btn-success btn-lg">+ Créer un nouveau produit</a>
-        <a href="{{ path('app_produit_index') }}" class="btn btn-success">Retour aux produits actifs</a>
-    </div>
+    <form method="post" action="{{ path('app_produit_bulk_reactivate') }}" id="bulk-reactivate-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('bulk_reactivate_produit') }}">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Code</th>
-                <th>Nom</th>
-                <th>Couleur</th>
+        <div class="mb-3" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="submit" class="btn btn-success" id="bulk-reactivate-btn" disabled>
+                ✓ Réactiver la sélection (<span id="bulk-count">0</span>)
+            </button>
+            <a href="{{ path('app_produit_index') }}" class="btn btn-primary">← Retour aux produits actifs</a>
+            <span class="text-muted text-sm">Cochez les lignes à réactiver puis cliquez sur le bouton.</span>
+        </div>
 
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for produit in produits %}
-            <tr>
-                <td>{{ produit.id }}</td>
-                <td>{{ produit.code }}</td>
-                <td>{{ produit.nom }}</td>
-                <td>{{ produit.couleur }}</td>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width:40px; text-align:center;">
+                        <input type="checkbox" id="bulk-select-all" title="Tout cocher / décocher">
+                    </th>
+                    <th>Id</th>
+                    <th>Désactivé le</th>
+                    <th>Code</th>
+                    <th>Nom</th>
+                    <th>Couleur</th>
+                    <th>actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for produit in produits %}
+                <tr>
+                    <td style="text-align:center;">
+                        <input type="checkbox" name="ids[]" value="{{ produit.id }}" class="bulk-row-check">
+                    </td>
+                    <td>{{ produit.id }}</td>
+                    <td>{{ produit.dateDesactivation ? produit.dateDesactivation|date('d/m/Y H:i') : '—' }}</td>
+                    <td>{{ produit.code }}</td>
+                    <td>{{ produit.nom }}</td>
+                    <td>{{ produit.couleur }}</td>
+                    <td>
+                        <a href="{{ path('app_produit_show', {'id': produit.id}) }}">Afficher</a>
+                        <a href="{{ path('app_produit_edit', {'id': produit.id}) }}">Modifier</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">no records found</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
 
-                <td>
-                    <a href="{{ path('app_produit_show', {'id': produit.id}) }}">Afficher</a>
-                    <a href="{{ path('app_produit_edit', {'id': produit.id}) }}">Modifier</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <script>
+    (function() {
+        var selectAll = document.getElementById('bulk-select-all');
+        var rowChecks = document.querySelectorAll('.bulk-row-check');
+        var btn       = document.getElementById('bulk-reactivate-btn');
+        var counter   = document.getElementById('bulk-count');
+
+        function refresh() {
+            var n = 0;
+            rowChecks.forEach(function(c) { if (c.checked) n++; });
+            counter.textContent = n;
+            btn.disabled = (n === 0);
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                rowChecks.forEach(function(c) { c.checked = selectAll.checked; });
+                refresh();
+            });
+        }
+        rowChecks.forEach(function(c) {
+            c.addEventListener('change', refresh);
+        });
+        refresh();
+    })();
+    </script>
 {% endblock %}

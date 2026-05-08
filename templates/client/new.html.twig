@@ -8,9 +8,7 @@
 		<h1>Créer un nouveau client</h1>
 	</div>
 
-	<div class="form-card">
-		{{ include('client/_form.html.twig') }}
-	</div>
+	{{ include('client/_form.html.twig') }}
 
 	<div class="mt-2">
 		<a href="{{ path('app_client_index') }}" class="btn btn-secondary">← Retour à la liste</a>
