@@ -22,9 +22,15 @@
 ###> suppression des migratoins ###
 /migrations/
 
-###> Claude Code worktrees ###
-/.claude/worktrees/
+###> Fichiers liés aux outils IA (Claude Code, etc.) — ne pas pusher ###
+/.claude/
+tmpclaude-*
 
 ###> Scripts de seed locaux (à ne pas pusher) ###
 /actions_seed.sql
 /*_seed.sql
+
+###> Fichiers IDE / éditeur locaux ###
+/.idea/
+/.vscode/
+/*.code-workspace
