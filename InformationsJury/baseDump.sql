@@ -20,7 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Base de données : `easycleanesat`
 --
-CREATE DATABASE IF NOT EXISTS `easycleanesat` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci;
+CREATE DATABASE IF NOT EXISTS `easycleanesat` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `easycleanesat`;
 
 -- --------------------------------------------------------
@@ -1102,7 +1102,7 @@ CREATE TABLE `doctrine_migration_versions` (
   `version` varchar(191) NOT NULL,
   `executed_at` datetime DEFAULT NULL,
   `execution_time` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `doctrine_migration_versions`
