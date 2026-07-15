@@ -8,9 +8,8 @@
 	</div>
 	<div class="card">
 		<div style="display: flex; align-items: center; gap: 20px;">
-			{% if type_zone.picto %}
-				<img src="{{ asset('PictoTypeZonePNG/' ~ type_zone.picto) }}" alt="{{ type_zone.nom }}" style="max-height: 100px;">
-			{% endif %}
+			{% set tzPicto = type_zone.picto ?: (type_zone.id ~ '.png') %}
+			<img src="{{ asset('PictoTypeZonePNG/' ~ tzPicto) }}" alt="{{ type_zone.nom }}" style="max-height: 100px;" onerror="this.style.display='none'">
 			<ul class="info-list" style="flex:1;">
 				<li>
 					<span class="info-label">Nom :</span>

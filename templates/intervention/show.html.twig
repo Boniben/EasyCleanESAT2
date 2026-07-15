@@ -1061,9 +1061,10 @@
                     {# Ligne 1 : Photo zone (gauche, remplit la case) + flèche courte avec 0 #}
                     <div class="fi-row-item fi-row-photo">
                         <div class="fi-sp-cell" style="align-self:stretch; padding:0; overflow:hidden;">
-                            {% if zone.typeZone and zone.typeZone.picto %}
+                            {% if zone.typeZone %}
+                                {% set tzPicto = zone.typeZone.picto ?: (zone.typeZone.id ~ '.png') %}
                                 <img class="fi-zone-photo-inline"
-                                     src="{{ asset('PictoTypeZonePNG/' ~ zone.typeZone.picto) }}"
+                                     src="{{ asset('PictoTypeZonePNG/' ~ tzPicto) }}"
                                      alt="{{ zone.typeZone.nom }}"
                                      onerror="this.style.display='none'">
                             {% endif %}
