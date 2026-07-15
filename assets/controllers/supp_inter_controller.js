@@ -34,6 +34,7 @@ export default class extends Controller {
         contenantUrl: String,
         moyenDosageUrl: String,
         tempsContactUrl: String,
+        typeSupportPictoUrl: String,
     };
 
     // État interne
@@ -161,7 +162,7 @@ export default class extends Controller {
 
         if (support.picto) {
             const img = document.createElement('img');
-            img.src = '/easycleanesat/public/PictoTypeSupportPNG/' + support.picto;
+            img.src = this.typeSupportPictoUrlValue + support.picto;
             img.alt = support.nom;
             img.style.cssText = 'width:40px;height:40px;object-fit:contain;pointer-events:none;';
             img.onerror = () => { img.style.display = 'none'; };
